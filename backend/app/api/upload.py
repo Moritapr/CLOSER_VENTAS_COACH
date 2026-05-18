@@ -45,11 +45,13 @@ def to_mp3(audio_bytes: bytes, content_type: str, filename: str) -> tuple[bytes,
 @router.post("/upload")
 async def subir_audio(archivo: UploadFile = File(...)):
     contenido = await archivo.read()
+    print(f"ARCHIVO RECIBIDO: {len(contenido)} bytes, content_type={archivo.content_type}, filename={archivo.filename}")
     mp3_bytes, mp3_nombre = to_mp3(
         contenido,
         archivo.content_type or "",
         archivo.filename or "audio.mp3",
     )
+    print(f"MP3 GENERADO: {len(mp3_bytes)} bytes, nombre={mp3_nombre}")
     resultado = await transcribir(mp3_bytes, mp3_nombre)
 
     return {

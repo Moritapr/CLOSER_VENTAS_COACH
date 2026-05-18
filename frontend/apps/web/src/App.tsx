@@ -124,22 +124,24 @@ export function App() {
 
       {/* Content */}
       <main className="mx-auto max-w-2xl px-4 py-8">
-        {tab === "analizar" && (
-          <>
-            {state === "idle" && <UploadZone onFileSelect={handleFileSelect} />}
-            {state === "loading" && <LoadingState fileName={fileName} />}
-            {state === "done" && result && (
-              <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />
-            )}
-          </>
-        )}
+        <div key={tab} className="animate-fade-slide-up">
+          {tab === "analizar" && (
+            <>
+              {state === "idle" && <UploadZone onFileSelect={handleFileSelect} />}
+              {state === "loading" && <LoadingState fileName={fileName} />}
+              {state === "done" && result && (
+                <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />
+              )}
+            </>
+          )}
 
-        {tab === "dashboard" && (
-          <Dashboard
-            data={MOCK_DASHBOARD}
-            onViewCall={(id) => console.log("view call", id)}
-          />
-        )}
+          {tab === "dashboard" && (
+            <Dashboard
+              data={MOCK_DASHBOARD}
+              onViewCall={(id) => console.log("view call", id)}
+            />
+          )}
+        </div>
       </main>
     </div>
   )

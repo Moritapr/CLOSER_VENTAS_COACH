@@ -73,7 +73,8 @@ export function Dashboard({ data, onViewCall }: DashboardProps) {
           { label: "Mejor semana", value: Math.max(...data.weeklyScores.map((w) => w.score)) },
           { label: "Fase más débil", value: worstPhase?.name.split(" ")[0] ?? "—", small: true },
         ].map(({ label, value, small }) => (
-          <div key={label} className="rounded-xl border p-4 space-y-1">
+          <div key={label}
+            className="rounded-xl border p-4 space-y-1 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 cursor-default">
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className={`font-bold ${small ? "text-base leading-tight" : "text-2xl"}`}>{value}</p>
           </div>
@@ -142,7 +143,7 @@ export function Dashboard({ data, onViewCall }: DashboardProps) {
               <button
                 key={call.id}
                 onClick={() => onViewCall(call.id)}
-                className="w-full text-left rounded-lg border p-3 hover:bg-muted/50 transition-colors"
+                className="w-full text-left rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm hover:-translate-y-px hover:border-primary/20"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">

@@ -13,6 +13,7 @@ async def guardar_analisis(
         "duracion_segundos": duracion_segundos,
         "transcripcion": transcripcion,
         "puntaje_general": analisis.get("puntaje_general"),
+        "resultado": analisis.get("resultado"),
         "fase_1_puntaje": fases.get("fase_1_introduccion", {}).get("puntaje"),
         "fase_1_realizado": fases.get("fase_1_introduccion", {}).get("realizado"),
         "fase_1_feedback": fases.get("fase_1_introduccion", {}).get("feedback"),

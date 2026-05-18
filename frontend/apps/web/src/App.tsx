@@ -3,9 +3,11 @@ import { UploadZone } from "@/components/UploadZone"
 import { LoadingState } from "@/components/LoadingState"
 import { AnalysisReport, type AnalysisResult } from "@/components/AnalysisReport"
 import { LoginScreen } from "@/components/LoginScreen"
+import { Dashboard, type DashboardData } from "@/components/Dashboard"
 import { useAuth } from "@/hooks/useAuth"
 
 type AppState = "idle" | "loading" | "done"
+type Tab = "analizar" | "dashboard"
 
 const MOCK_RESULT: AnalysisResult = {
   score: 74,
@@ -38,8 +40,38 @@ const MOCK_RESULT: AnalysisResult = {
   ],
 }
 
+const MOCK_DASHBOARD: DashboardData = {
+  calls: [
+    { id: "1", date: "18 may", fileName: "llamada-garcia.mp3", duration: "12:34", score: 74, weakestPhase: "Cierre" },
+    { id: "2", date: "17 may", fileName: "llamada-rodriguez.mp3", duration: "08:12", score: 61, weakestPhase: "Presentación IUL" },
+    { id: "3", date: "16 may", fileName: "llamada-martinez.mp3", duration: "15:40", score: 88, weakestPhase: "Seguimiento" },
+    { id: "4", date: "15 may", fileName: "llamada-lopez.mp3", duration: "10:05", score: 55, weakestPhase: "Manejo de objeciones" },
+    { id: "5", date: "14 may", fileName: "llamada-sanchez.mp3", duration: "13:22", score: 79, weakestPhase: "Cierre" },
+  ],
+  weeklyScores: [
+    { label: "Sem 1", score: 58 },
+    { label: "Sem 2", score: 65 },
+    { label: "Sem 3", score: 71 },
+    { label: "Sem 4", score: 79 },
+    { label: "Esta", score: 74 },
+  ],
+  phaseFails: [
+    { name: "Cierre", failCount: 4, total: 5 },
+    { name: "Presentación IUL", failCount: 3, total: 5 },
+    { name: "Manejo de objeciones", failCount: 3, total: 5 },
+    { name: "Calificación", failCount: 1, total: 5 },
+  ],
+  topObjections: [
+    { type: "Es muy caro", count: 5, handledCount: 2 },
+    { type: "Necesito pensarlo", count: 4, handledCount: 3 },
+    { type: "Ya tengo seguro", count: 3, handledCount: 2 },
+    { type: "No confío en seguros", count: 2, handledCount: 0 },
+  ],
+}
+
 export function App() {
-  const { isAuthenticated, login } = useAuth()
+  const { isAuthenticated, login, logout } = useAuth()
+  const [tab, setTab] = useState<Tab>("analizar")
   const [state, setState] = useState<AppState>("idle")
   const [fileName, setFileName] = useState("")
   const [result, setResult] = useState<AnalysisResult | null>(null)
@@ -47,7 +79,6 @@ export function App() {
   async function handleFileSelect(file: File) {
     setFileName(file.name)
     setState("loading")
-
     // TODO: replace with real API call to backend /analyze
     await new Promise((r) => setTimeout(r, 3000))
     setResult(MOCK_RESULT)
@@ -66,32 +97,50 @@ export function App() {
 
   return (
     <div className="min-h-svh bg-background">
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Closer Ventas Coach</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Analizá tu llamada IUL con IA y mejorá tu script
-          </p>
+      {/* Nav */}
+      <header className="border-b sticky top-0 bg-background/95 backdrop-blur z-10">
+        <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between gap-4">
+          <span className="font-bold text-sm tracking-tight">Closer Ventas Coach</span>
+          <div className="flex items-center gap-1">
+            {(["analizar", "dashboard"] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors capitalize
+                  ${tab === t ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {t === "analizar" ? "Analizar" : "Dashboard"}
+              </button>
+            ))}
+            <button
+              onClick={logout}
+              className="ml-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Salir
+            </button>
+          </div>
         </div>
+      </header>
 
-        {/* Content */}
-        {state === "idle" && (
-          <UploadZone onFileSelect={handleFileSelect} />
+      {/* Content */}
+      <main className="mx-auto max-w-2xl px-4 py-8">
+        {tab === "analizar" && (
+          <>
+            {state === "idle" && <UploadZone onFileSelect={handleFileSelect} />}
+            {state === "loading" && <LoadingState fileName={fileName} />}
+            {state === "done" && result && (
+              <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />
+            )}
+          </>
         )}
 
-        {state === "loading" && (
-          <LoadingState fileName={fileName} />
-        )}
-
-        {state === "done" && result && (
-          <AnalysisReport
-            result={result}
-            fileName={fileName}
-            onReset={handleReset}
+        {tab === "dashboard" && (
+          <Dashboard
+            data={MOCK_DASHBOARD}
+            onViewCall={(id) => console.log("view call", id)}
           />
         )}
-      </div>
+      </main>
     </div>
   )
 }

@@ -12,32 +12,36 @@ type Tab = "analizar" | "dashboard"
 const API_BASE = "https://closerventascoach-production.up.railway.app"
 
 const PHASE_NAMES = [
-  "Apertura y rapport",
+  "Introducción",
+  "Descubrimiento",
+  "Licencia",
   "Calificación",
-  "Presentación del problema",
-  "Presentación IUL",
-  "Manejo de objeciones",
+  "Oferta IUL",
+  "Finanzas",
   "Cierre",
-  "Seguimiento",
+] as const
+
+const FASE_KEYS = [
+  "fase_1_introduccion",
+  "fase_2_descubrimiento",
+  "fase_3_licencia",
+  "fase_4_calificacion",
+  "fase_5_oferta",
+  "fase_6_finanzas",
+  "fase_7_cierre",
 ] as const
 
 interface BackendPhase {
   puntaje: number
   realizado: boolean
   feedback: string
+  fragmento?: string
 }
 
 interface BackendAnalysis {
   puntaje_general: number
-  fases: {
-    fase_1: BackendPhase
-    fase_2: BackendPhase
-    fase_3: BackendPhase
-    fase_4: BackendPhase
-    fase_5: BackendPhase
-    fase_6: BackendPhase
-    fase_7: BackendPhase
-  }
+  resultado?: string
+  fases: Record<typeof FASE_KEYS[number], BackendPhase>
   fortalezas: string[]
   areas_de_mejora: string[]
   consejo_principal: string
@@ -50,12 +54,11 @@ function secondsToDuration(s: number): string {
 }
 
 function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): AnalysisResult {
-  const faseKeys = ["fase_1", "fase_2", "fase_3", "fase_4", "fase_5", "fase_6", "fase_7"] as const
   return {
     score: Math.round(analysis.puntaje_general * 10),
     duration: secondsToDuration(duracion_segundos),
     summary: analysis.consejo_principal,
-    phases: faseKeys.map((key, i) => ({
+    phases: FASE_KEYS.map((key, i) => ({
       name: PHASE_NAMES[i],
       passed: analysis.fases[key].realizado,
       feedback: analysis.fases[key].feedback,
@@ -122,7 +125,7 @@ export function App() {
         body: JSON.stringify({ transcripcion, nombre_archivo: file.name, duracion_segundos }),
       })
       if (!analyzeRes.ok) throw new Error(`Error al analizar la llamada (${analyzeRes.status}).`)
-      const analysis: BackendAnalysis = await analyzeRes.json()
+      const { analisis: analysis }: { analisis: BackendAnalysis } = await analyzeRes.json()
 
       setResult(adaptAnalysis(analysis, duracion_segundos))
       setState("done")

@@ -23,7 +23,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   }
 
   return (
-    <div style={{ position: "relative", minHeight: "100svh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
+    <div style={{ position: "relative", zIndex: 10, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
 
       {/* ── WebGL animated background ── */}
       <WebGLShader />

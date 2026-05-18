@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { UploadZone } from "@/components/UploadZone"
+import { HeroUpload } from "@/components/HeroUpload"
 import { LoadingState } from "@/components/LoadingState"
 import { AnalysisReport, type AnalysisResult } from "@/components/AnalysisReport"
 import { LoginScreen } from "@/components/LoginScreen"
@@ -96,25 +96,57 @@ export function App() {
   }
 
   return (
-    <div className="min-h-svh bg-background">
-      {/* Nav */}
-      <header className="border-b sticky top-0 bg-background/95 backdrop-blur z-10">
+    <div className="min-h-svh">
+      {/* Nav — glass */}
+      <header
+        className="sticky top-0 z-10"
+        style={{
+          background: "rgba(7, 5, 14, 0.72)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          borderBottom: "1px solid rgba(139, 92, 246, 0.15)",
+        }}
+      >
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between gap-4">
-          <span className="font-bold text-sm tracking-tight">Closer Ventas Coach</span>
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div
+              className="h-7 w-7 rounded-lg flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", boxShadow: "0 0 12px rgba(124,58,237,0.5)" }}
+            >
+              <svg className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+              </svg>
+            </div>
+            <span className="font-black text-sm tracking-tight" style={{ color: "#ede9fe" }}>
+              Closer Ventas Coach
+            </span>
+          </div>
+
+          {/* Tabs + logout */}
           <div className="flex items-center gap-1">
             {(["analizar", "dashboard"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors capitalize
-                  ${tab === t ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200"
+                style={{
+                  background: tab === t ? "rgba(139,92,246,0.2)" : "transparent",
+                  color: tab === t ? "#c4b5fd" : "rgba(237,233,254,0.45)",
+                  border: tab === t ? "1px solid rgba(139,92,246,0.3)" : "1px solid transparent",
+                  boxShadow: tab === t ? "0 0 15px rgba(139,92,246,0.2)" : undefined,
+                }}
               >
                 {t === "analizar" ? "Analizar" : "Dashboard"}
               </button>
             ))}
             <button
               onClick={logout}
-              className="ml-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="ml-1 text-xs px-2 py-1 rounded-lg transition-all duration-200"
+              style={{ color: "rgba(237,233,254,0.3)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(237,233,254,0.7)" }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(237,233,254,0.3)" }}
             >
               Salir
             </button>
@@ -122,24 +154,29 @@ export function App() {
         </div>
       </header>
 
-      {/* Content */}
-      <main className="mx-auto max-w-2xl px-4 py-8">
-        {tab === "analizar" && (
-          <>
-            {state === "idle" && <UploadZone onFileSelect={handleFileSelect} />}
-            {state === "loading" && <LoadingState fileName={fileName} />}
-            {state === "done" && result && (
-              <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />
-            )}
-          </>
-        )}
+      {/* Content — wider when showing the hero to fit side widgets */}
+      <main
+        className="mx-auto px-4 py-8"
+        style={{ maxWidth: tab === "analizar" && state === "idle" ? 900 : 672 }}
+      >
+        <div key={tab} className="animate-fade-slide-up">
+          {tab === "analizar" && (
+            <>
+              {state === "idle" && <HeroUpload onFileSelect={handleFileSelect} />}
+              {state === "loading" && <LoadingState fileName={fileName} />}
+              {state === "done" && result && (
+                <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />
+              )}
+            </>
+          )}
 
-        {tab === "dashboard" && (
-          <Dashboard
-            data={MOCK_DASHBOARD}
-            onViewCall={(id) => console.log("view call", id)}
-          />
-        )}
+          {tab === "dashboard" && (
+            <Dashboard
+              data={MOCK_DASHBOARD}
+              onViewCall={(id) => console.log("view call", id)}
+            />
+          )}
+        </div>
       </main>
     </div>
   )

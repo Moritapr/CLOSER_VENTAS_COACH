@@ -72,7 +72,7 @@ Responde SOLO el JSON, sin texto adicional."""
 async def analizar_llamada(transcripcion: str) -> dict:
     respuesta = await client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=2000,
+        max_tokens=4096,
         system=PROMPT_SISTEMA,
         messages=[
             {

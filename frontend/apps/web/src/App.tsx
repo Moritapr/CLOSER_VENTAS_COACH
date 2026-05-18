@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { UploadZone } from "@/components/UploadZone"
+import { HeroUpload } from "@/components/HeroUpload"
 import { LoadingState } from "@/components/LoadingState"
 import { AnalysisReport, type AnalysisResult } from "@/components/AnalysisReport"
 import { LoginScreen } from "@/components/LoginScreen"
@@ -154,12 +154,15 @@ export function App() {
         </div>
       </header>
 
-      {/* Content */}
-      <main className="mx-auto max-w-2xl px-4 py-8">
+      {/* Content — wider when showing the hero to fit side widgets */}
+      <main
+        className="mx-auto px-4 py-8"
+        style={{ maxWidth: tab === "analizar" && state === "idle" ? 900 : 672 }}
+      >
         <div key={tab} className="animate-fade-slide-up">
           {tab === "analizar" && (
             <>
-              {state === "idle" && <UploadZone onFileSelect={handleFileSelect} />}
+              {state === "idle" && <HeroUpload onFileSelect={handleFileSelect} />}
               {state === "loading" && <LoadingState fileName={fileName} />}
               {state === "done" && result && (
                 <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />

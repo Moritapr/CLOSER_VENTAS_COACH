@@ -9,35 +9,60 @@ import { useAuth } from "@/hooks/useAuth"
 type AppState = "idle" | "loading" | "done"
 type Tab = "analizar" | "dashboard"
 
-const MOCK_RESULT: AnalysisResult = {
-  score: 74,
-  duration: "12:34",
-  summary: "Buena apertura y rapport, pero la presentación de beneficios IUL fue débil y no se cerró correctamente.",
-  phases: [
-    { name: "Apertura y rapport", passed: true, feedback: "Excelente conexión inicial con el prospecto." },
-    { name: "Calificación", passed: true, feedback: "Identificó correctamente el perfil financiero." },
-    { name: "Presentación del problema", passed: true, feedback: "Explicó bien el problema de los seguros tradicionales." },
-    { name: "Presentación IUL", passed: false, feedback: "No explicó los beneficios del índice claramente." },
-    { name: "Manejo de objeciones", passed: false, feedback: "No respondió la objeción de precio con el 3-step." },
-    { name: "Cierre", passed: false, feedback: "No intentó el cierre directo al final de la llamada." },
-    { name: "Seguimiento", passed: true, feedback: "Agendó correctamente el follow-up." },
-  ],
-  strengths: [
-    "Tono de voz seguro y profesional durante toda la llamada",
-    "Buen manejo del silencio post-pregunta",
-    "Rapport natural y fluido en los primeros 3 minutos",
-  ],
-  weaknesses: [
-    "No usó analogías para explicar el crecimiento indexado",
-    "Habló de precio antes de establecer valor",
-    "No aplicó el cierre de 3 opciones al final",
-  ],
-  objections: [
-    { type: "Es muy caro", handled: false },
-    { type: "Necesito pensarlo", handled: true },
-    { type: "Ya tengo seguro", handled: true },
-    { type: "No confío en seguros", handled: false },
-  ],
+const API_BASE = "https://closerventascoach-production.up.railway.app"
+
+const PHASE_NAMES = [
+  "Apertura y rapport",
+  "Calificación",
+  "Presentación del problema",
+  "Presentación IUL",
+  "Manejo de objeciones",
+  "Cierre",
+  "Seguimiento",
+] as const
+
+interface BackendPhase {
+  puntaje: number
+  realizado: boolean
+  feedback: string
+}
+
+interface BackendAnalysis {
+  puntaje_general: number
+  fases: {
+    fase_1: BackendPhase
+    fase_2: BackendPhase
+    fase_3: BackendPhase
+    fase_4: BackendPhase
+    fase_5: BackendPhase
+    fase_6: BackendPhase
+    fase_7: BackendPhase
+  }
+  fortalezas: string[]
+  areas_de_mejora: string[]
+  consejo_principal: string
+}
+
+function secondsToDuration(s: number): string {
+  const m = Math.floor(s / 60)
+  const sec = Math.floor(s % 60)
+  return `${m}:${String(sec).padStart(2, "0")}`
+}
+
+function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): AnalysisResult {
+  const faseKeys = ["fase_1", "fase_2", "fase_3", "fase_4", "fase_5", "fase_6", "fase_7"] as const
+  return {
+    score: Math.round(analysis.puntaje_general * 10),
+    duration: secondsToDuration(duracion_segundos),
+    summary: analysis.consejo_principal,
+    phases: faseKeys.map((key, i) => ({
+      name: PHASE_NAMES[i],
+      passed: analysis.fases[key].realizado,
+      feedback: analysis.fases[key].feedback,
+    })),
+    strengths: analysis.fortalezas,
+    weaknesses: analysis.areas_de_mejora,
+  }
 }
 
 const MOCK_DASHBOARD: DashboardData = {
@@ -75,20 +100,44 @@ export function App() {
   const [state, setState] = useState<AppState>("idle")
   const [fileName, setFileName] = useState("")
   const [result, setResult] = useState<AnalysisResult | null>(null)
+  const [apiError, setApiError] = useState<string | null>(null)
 
   async function handleFileSelect(file: File) {
     setFileName(file.name)
+    setApiError(null)
     setState("loading")
-    // TODO: replace with real API call to backend /analyze
-    await new Promise((r) => setTimeout(r, 3000))
-    setResult(MOCK_RESULT)
-    setState("done")
+
+    try {
+      // Step 1: upload MP3, get transcription
+      const form = new FormData()
+      form.append("archivo", file)
+      const uploadRes = await fetch(`${API_BASE}/api/upload`, { method: "POST", body: form })
+      if (!uploadRes.ok) throw new Error(`El servidor rechazó el archivo (${uploadRes.status}).`)
+      const { transcripcion, duracion_segundos } = await uploadRes.json()
+
+      // Step 2: analyze transcription
+      const analyzeRes = await fetch(`${API_BASE}/api/analizar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcripcion, nombre_archivo: file.name, duracion_segundos }),
+      })
+      if (!analyzeRes.ok) throw new Error(`Error al analizar la llamada (${analyzeRes.status}).`)
+      const analysis: BackendAnalysis = await analyzeRes.json()
+
+      setResult(adaptAnalysis(analysis, duracion_segundos))
+      setState("done")
+    } catch (err) {
+      console.error("[API]", err)
+      setApiError(err instanceof Error ? err.message : "No se pudo conectar con el servidor.")
+      setState("idle")
+    }
   }
 
   function handleReset() {
     setState("idle")
     setFileName("")
     setResult(null)
+    setApiError(null)
   }
 
   if (!isAuthenticated) {
@@ -162,7 +211,25 @@ export function App() {
         <div key={tab} className="animate-fade-slide-up">
           {tab === "analizar" && (
             <>
-              {state === "idle" && <HeroUpload onFileSelect={handleFileSelect} />}
+              {state === "idle" && (
+                <>
+                  <HeroUpload onFileSelect={handleFileSelect} />
+                  {apiError && (
+                    <div style={{
+                      marginTop: 16,
+                      padding: "12px 16px",
+                      borderRadius: 12,
+                      background: "rgba(248, 113, 113, 0.08)",
+                      border: "1px solid rgba(248, 113, 113, 0.28)",
+                      color: "#f87171",
+                      fontSize: 13,
+                      textAlign: "center",
+                    }}>
+                      {apiError}
+                    </div>
+                  )}
+                </>
+              )}
               {state === "loading" && <LoadingState fileName={fileName} />}
               {state === "done" && result && (
                 <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />

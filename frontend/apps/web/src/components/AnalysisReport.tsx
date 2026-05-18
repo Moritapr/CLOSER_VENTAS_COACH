@@ -13,7 +13,7 @@ export interface AnalysisResult {
   phases: PhaseResult[]
   strengths: string[]
   weaknesses: string[]
-  objections: { type: string; handled: boolean }[]
+  objections?: { type: string; handled: boolean }[]
   summary: string
 }
 
@@ -191,33 +191,35 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
         </div>
       </Section>
 
-      {/* Objections */}
-      <Section delay={360}>
-        <div className="p-5 space-y-4" style={GLASS}>
-          <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Objeciones detectadas</p>
-          <div className="gradient-sep" />
-          <div className="flex flex-wrap gap-2">
-            {result.objections.map((obj) => {
-              const handled = obj.handled
-              const color = handled ? "#34d399" : "#f87171"
-              return (
-                <span
-                  key={obj.type}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-transform hover:scale-105 cursor-default"
-                  style={{
-                    background: handled ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)",
-                    border: `1px solid ${handled ? "rgba(52,211,153,0.25)" : "rgba(248,113,113,0.25)"}`,
-                    color,
-                  }}
-                >
-                  <span>{handled ? "✓" : "✗"}</span>
-                  {obj.type}
-                </span>
-              )
-            })}
+      {/* Objections — only when backend provides them */}
+      {result.objections && result.objections.length > 0 && (
+        <Section delay={360}>
+          <div className="p-5 space-y-4" style={GLASS}>
+            <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Objeciones detectadas</p>
+            <div className="gradient-sep" />
+            <div className="flex flex-wrap gap-2">
+              {result.objections.map((obj) => {
+                const handled = obj.handled
+                const color = handled ? "#34d399" : "#f87171"
+                return (
+                  <span
+                    key={obj.type}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-transform hover:scale-105 cursor-default"
+                    style={{
+                      background: handled ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)",
+                      border: `1px solid ${handled ? "rgba(52,211,153,0.25)" : "rgba(248,113,113,0.25)"}`,
+                      color,
+                    }}
+                  >
+                    <span>{handled ? "✓" : "✗"}</span>
+                    {obj.type}
+                  </span>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      </Section>
+        </Section>
+      )}
 
     </div>
   )

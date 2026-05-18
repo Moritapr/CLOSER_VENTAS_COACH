@@ -5,16 +5,27 @@ export interface PhaseResult {
   name: string
   passed: boolean
   feedback: string
+  fragmento?: string
+  queDebioDecir?: string
+}
+
+export interface ObjecionResult {
+  objecion: string
+  respuestaDada: string
+  queDebioDecir: string
 }
 
 export interface AnalysisResult {
   score: number
   duration: string
+  summary: string
+  resultado?: string
+  pasoAVideollamada?: boolean
   phases: PhaseResult[]
+  objeciones?: ObjecionResult[]
   strengths: string[]
   weaknesses: string[]
   objections?: { type: string; handled: boolean }[]
-  summary: string
 }
 
 interface AnalysisReportProps {
@@ -33,6 +44,23 @@ const GLASS = {
   border: "1px solid rgba(139, 92, 246, 0.18)",
   borderRadius: "16px",
 } as const
+
+const RESULTADO_STYLES: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  CERRADA:               { label: "Cerrada",               color: "#34d399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.3)"  },
+  VIDEOLLAMADA_AGENDADA: { label: "Videollamada agendada", color: "#818cf8", bg: "rgba(99,102,241,0.12)",  border: "rgba(99,102,241,0.3)"  },
+  EN_PROCESO:            { label: "En proceso",            color: "#fbbf24", bg: "rgba(251,191,36,0.12)",  border: "rgba(251,191,36,0.3)"  },
+  PERDIDA:               { label: "Perdida",               color: "#f87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.3)" },
+}
+
+function ResultadoBadge({ resultado }: { resultado: string }) {
+  const s = RESULTADO_STYLES[resultado] ?? RESULTADO_STYLES["EN_PROCESO"]
+  return (
+    <span className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold"
+      style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
+      {s.label}
+    </span>
+  )
+}
 
 function Section({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
@@ -104,11 +132,22 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       {/* Header */}
       <Section delay={0}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
+          <div className="space-y-1">
             <h2 className="text-xl font-black" style={{ color: "#ede9fe" }}>Resultado del análisis</h2>
-            <p className="text-sm mt-0.5" style={{ color: "rgba(237,233,254,0.42)" }}>
+            <p className="text-sm" style={{ color: "rgba(237,233,254,0.42)" }}>
               {fileName} · {result.duration}
             </p>
+            {result.resultado && (
+              <div className="flex items-center gap-2 flex-wrap pt-1">
+                <ResultadoBadge resultado={result.resultado} />
+                {result.pasoAVideollamada && (
+                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                    style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "#818cf8" }}>
+                    ✓ Pasó a videollamada
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <button
             onClick={onReset}
@@ -151,6 +190,12 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                     <AnimatedPhaseBar passed={phase.passed} delay={250 + i * 80} />
                   </div>
                   <p className="text-xs" style={{ color: "rgba(237,233,254,0.42)" }}>{phase.feedback}</p>
+                  {phase.queDebioDecir && (
+                    <div className="mt-1.5 rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                      <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
+                      <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{phase.queDebioDecir}"</p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -191,31 +236,30 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
         </div>
       </Section>
 
-      {/* Objections — only when backend provides them */}
-      {result.objections && result.objections.length > 0 && (
+      {/* Objeciones detectadas */}
+      {result.objeciones && result.objeciones.length > 0 && (
         <Section delay={360}>
           <div className="p-5 space-y-4" style={GLASS}>
             <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Objeciones detectadas</p>
             <div className="gradient-sep" />
-            <div className="flex flex-wrap gap-2">
-              {result.objections.map((obj) => {
-                const handled = obj.handled
-                const color = handled ? "#34d399" : "#f87171"
-                return (
-                  <span
-                    key={obj.type}
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-transform hover:scale-105 cursor-default"
-                    style={{
-                      background: handled ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)",
-                      border: `1px solid ${handled ? "rgba(52,211,153,0.25)" : "rgba(248,113,113,0.25)"}`,
-                      color,
-                    }}
-                  >
-                    <span>{handled ? "✓" : "✗"}</span>
-                    {obj.type}
-                  </span>
-                )
-              })}
+            <div className="space-y-4">
+              {result.objeciones.map((obj, i) => (
+                <div key={i} className="space-y-2">
+                  <p className="text-xs font-semibold" style={{ color: "#f87171" }}>
+                    "{obj.objecion}"
+                  </p>
+                  <div className="pl-3 border-l-2 space-y-1.5" style={{ borderColor: "rgba(139,92,246,0.3)" }}>
+                    <div>
+                      <p className="text-xs font-medium" style={{ color: "rgba(237,233,254,0.45)" }}>Lo que dijiste:</p>
+                      <p className="text-xs" style={{ color: "rgba(237,233,254,0.65)" }}>{obj.respuestaDada}</p>
+                    </div>
+                    <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                      <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
+                      <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{obj.queDebioDecir}"</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </Section>

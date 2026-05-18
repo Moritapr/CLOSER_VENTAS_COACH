@@ -3,70 +3,94 @@ from app.core.config import settings
 
 client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
-PROMPT_SISTEMA = """Eres un coach experto en ventas de seguros de vida IUL (Indexed Universal Life).
-Analiza la transcripción de una llamada de ventas y evalúa el desempeño del agente
-en cada una de las 7 fases del script IUL. Sé específico, directo y constructivo."""
+PROMPT_SISTEMA = """Eres un coach de ventas IUL que acaba de escuchar la grabación de una llamada.
+Hablas directamente con el closer, de tú a tú, como un mentor que vio exactamente qué pasó.
 
-PROMPT_ANALISIS = """Analiza esta transcripción de una llamada de ventas IUL y evalúa cada fase.
+REGLAS DE TONO:
+- Habla en primera persona dirigiéndote al closer: "perdiste al cliente cuando...", "en ese momento debiste decir..."
+- Nunca uses lenguaje de reporte ni tercera persona: nada de "el agente", "el vendedor", "se observa que".
+- Nada de jerga técnica de ventas: olvida "rapport", "ancla emocional", "compliance", "objeción de precio".
+  Habla como hablaría cualquier persona: "cuando el cliente dijo que era caro, te quedaste callado en vez de..."
+- Sé específico con momentos de la llamada. Si puedes citar lo que dijo el cliente y lo que respondió el closer, hazlo.
+- Si el resultado es PERDIDA: dedica el feedback a identificar el momento exacto donde se perdió la venta
+  y escribe qué frase concreta debió decir el closer en ese instante.
+- Para cada fase que no se realizó correctamente, escribe en que_debio_decir una frase real lista para usar,
+  no un consejo genérico. Ejemplo: "Oye [nombre], antes de contarte todo te mando mi licencia por WhatsApp
+  para que veas con quién estás hablando, ¿cuál es tu número?"."""
+
+PROMPT_ANALISIS = """Escuchaste esta llamada de ventas IUL. Analiza cada fase y responde SOLO en JSON.
 
 TRANSCRIPCIÓN:
 {transcripcion}
 
-Evalúa EXACTAMENTE estas 7 fases y responde SOLO en JSON con esta estructura:
+Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni después:
 
 {{
   "puntaje_general": <número del 1 al 10>,
-  "resultado": "<CERRADA | NO_CERRADA | EN_PROCESO>",
+  "resultado": "<CERRADA | VIDEOLLAMADA_AGENDADA | EN_PROCESO | PERDIDA>",
+  "paso_a_videollamada": <true|false>,
   "fases": {{
     "fase_1_introduccion": {{
       "puntaje": <1-10>,
       "realizado": <true|false>,
-      "feedback": "<qué hizo bien y qué mejorar>",
-      "fragmento": "<cita textual de la llamada si aplica>"
+      "feedback": "<qué hizo bien y qué falló, hablando directamente al closer>",
+      "fragmento": "<cita textual de la llamada, o null si no aplica>",
+      "que_debio_decir": "<frase concreta lista para usar, o null si la fase se hizo bien>"
     }},
     "fase_2_descubrimiento": {{
       "puntaje": <1-10>,
       "realizado": <true|false>,
-      "feedback": "<identificó ahorro vs protección familiar?>",
-      "fragmento": "<cita textual>"
+      "feedback": "<preguntó por el objetivo — ahorro o protección familiar — y escuchó la respuesta?>",
+      "fragmento": "<cita textual o null>",
+      "que_debio_decir": "<frase concreta o null>"
     }},
     "fase_3_licencia": {{
       "puntaje": <1-10>,
       "realizado": <true|false>,
-      "feedback": "<envió licencia por WhatsApp para generar confianza?>",
-      "fragmento": "<cita textual>"
+      "feedback": "<mandó su licencia por WhatsApp para que el cliente sepa con quién habla?>",
+      "fragmento": "<cita textual o null>",
+      "que_debio_decir": "<frase concreta o null>"
     }},
     "fase_4_calificacion": {{
       "puntaje": <1-10>,
       "realizado": <true|false>,
-      "feedback": "<preguntó estado de salud, trabajo y estatus migratorio?>",
-      "fragmento": "<cita textual>"
+      "feedback": "<preguntó estado de salud, tipo de trabajo y estatus migratorio?>",
+      "fragmento": "<cita textual o null>",
+      "que_debio_decir": "<frase concreta o null>"
     }},
     "fase_5_oferta": {{
       "puntaje": <1-10>,
       "realizado": <true|false>,
-      "feedback": "<explicó los 3 beneficios: ahorro S&P500, seguro de vida, cobertura en vida?>",
-      "fragmento": "<cita textual>"
+      "feedback": "<explicó los 3 beneficios: crecer dinero con el S&P500, seguro de vida y cobertura en vida?>",
+      "fragmento": "<cita textual o null>",
+      "que_debio_decir": "<frase concreta o null>"
     }},
     "fase_6_finanzas": {{
       "puntaje": <1-10>,
       "realizado": <true|false>,
-      "feedback": "<encontró monto cómodo entre 5-10% del ingreso mensual?>",
-      "fragmento": "<cita textual>"
+      "feedback": "<encontró un monto cómodo entre el 5 y 10 porciento del ingreso mensual del cliente?>",
+      "fragmento": "<cita textual o null>",
+      "que_debio_decir": "<frase concreta o null>"
     }},
     "fase_7_cierre": {{
       "puntaje": <1-10>,
       "realizado": <true|false>,
-      "feedback": "<obtuvo social, confirmó monto, dio datos de póliza y cerró?>",
-      "fragmento": "<cita textual>"
+      "feedback": "<obtuvo el número de seguro social, confirmó el monto y dio los datos de la póliza?>",
+      "fragmento": "<cita textual o null>",
+      "que_debio_decir": "<frase concreta o null>"
     }}
   }},
-  "fortalezas": ["<fortaleza 1>", "<fortaleza 2>"],
-  "areas_de_mejora": ["<área 1>", "<área 2>"],
-  "consejo_principal": "<el consejo más importante para el próximo cierre>"
-}}
-
-Responde SOLO el JSON, sin texto adicional."""
+  "objeciones_detectadas": [
+    {{
+      "objecion": "<lo que dijo el cliente textualmente o en resumen>",
+      "respuesta_del_closer": "<cómo respondió el closer>",
+      "que_debio_decir": "<respuesta concreta que debió dar>"
+    }}
+  ],
+  "fortalezas": ["<cosa específica que hizo bien>"],
+  "areas_de_mejora": ["<cosa específica que falló, con ejemplo de la llamada>"],
+  "consejo_principal": "<el único consejo más importante para la próxima llamada, en lenguaje directo>"
+}}"""
 
 
 async def analizar_llamada(transcripcion: str) -> dict:

@@ -35,13 +35,22 @@ interface BackendPhase {
   puntaje: number
   realizado: boolean
   feedback: string
-  fragmento?: string
+  fragmento?: string | null
+  que_debio_decir?: string | null
+}
+
+interface BackendObjecion {
+  objecion: string
+  respuesta_del_closer: string
+  que_debio_decir: string
 }
 
 interface BackendAnalysis {
   puntaje_general: number
   resultado?: string
+  paso_a_videollamada?: boolean
   fases: Record<typeof FASE_KEYS[number], BackendPhase>
+  objeciones_detectadas?: BackendObjecion[]
   fortalezas: string[]
   areas_de_mejora: string[]
   consejo_principal: string
@@ -58,10 +67,19 @@ function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): An
     score: Math.round(analysis.puntaje_general * 10),
     duration: secondsToDuration(duracion_segundos),
     summary: analysis.consejo_principal,
+    resultado: analysis.resultado,
+    pasoAVideollamada: analysis.paso_a_videollamada,
     phases: FASE_KEYS.map((key, i) => ({
       name: PHASE_NAMES[i],
       passed: analysis.fases[key].realizado,
       feedback: analysis.fases[key].feedback,
+      fragmento: analysis.fases[key].fragmento ?? undefined,
+      queDebioDecir: analysis.fases[key].que_debio_decir ?? undefined,
+    })),
+    objeciones: analysis.objeciones_detectadas?.map((o) => ({
+      objecion: o.objecion,
+      respuestaDada: o.respuesta_del_closer,
+      queDebioDecir: o.que_debio_decir,
     })),
     strengths: analysis.fortalezas,
     weaknesses: analysis.areas_de_mejora,

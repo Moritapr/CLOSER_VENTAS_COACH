@@ -108,14 +108,15 @@ export function WebGLShader() {
     resize()
     window.addEventListener("resize", resize)
 
-    const clock = new THREE.Clock()
+    const timer = new THREE.Timer()
     let raf: number
-    function tick() {
+    function tick(timestamp: number) {
       raf = requestAnimationFrame(tick)
-      uniforms.uTime.value = clock.getElapsedTime()
+      timer.update(timestamp)
+      uniforms.uTime.value = timer.getElapsed()
       renderer.render(scene, camera)
     }
-    tick()
+    raf = requestAnimationFrame(tick)
 
     return () => {
       cancelAnimationFrame(raf)

@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react"
-import * as THREE from "three"
 
 const VERT = /* glsl */`
+attribute vec2 a_position;
 void main() {
-  gl_Position = vec4(position, 1.0);
+  gl_Position = vec4(a_position, 0.0, 1.0);
 }
 `
 
@@ -20,34 +20,32 @@ float vnoise(vec2 p) {
   vec2 i = floor(p); vec2 f = fract(p);
   vec2 u = f * f * (3.0 - 2.0 * f);
   return mix(
-    mix(hash(i), hash(i + vec2(1,0)), u.x),
-    mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), u.x), u.y);
+    mix(hash(i),            hash(i + vec2(1,0)), u.x),
+    mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), u.x),
+    u.y);
 }
 
 void main() {
-  vec2 uv = gl_FragCoord.xy / uResolution.xy;
+  vec2 uv  = gl_FragCoord.xy / uResolution.xy;
   float aspect = uResolution.x / uResolution.y;
   vec2 uvA = vec2(uv.x * aspect, uv.y);
 
   float t = uTime * 0.30;
 
-  /* Per-channel chromatic offsets */
-  vec2 uvR = uvA + vec2(sin(t        + uvA.y * 3.2) * 0.012, cos(t * 0.7)        * 0.008);
-  vec2 uvG = uvA + vec2(cos(t * 0.8  + uvA.x * 2.6) * 0.008, sin(t + 0.8)        * 0.010);
-  vec2 uvB = uvA + vec2(sin(t * 1.1  + uvA.y * 4.0) * 0.010, cos(t * 0.95)       * 0.009);
+  vec2 uvR = uvA + vec2(sin(t        + uvA.y * 3.2) * 0.012, cos(t * 0.70)  * 0.008);
+  vec2 uvG = uvA + vec2(cos(t * 0.8  + uvA.x * 2.6) * 0.008, sin(t + 0.80)  * 0.010);
+  vec2 uvB = uvA + vec2(sin(t * 1.1  + uvA.y * 4.0) * 0.010, cos(t * 0.95)  * 0.009);
 
-  /* Wave layers */
   float wR = sin(uvR.x * 4.8 + t * 1.4 + uvR.y * 2.6) * 0.5 + 0.5;
   float wG = sin(uvG.y * 3.8 + t * 1.0 + uvG.x * 3.1) * 0.5 + 0.5;
-  float wB = sin((uvB.x + uvB.y) * 5.5 - t * 0.8)      * 0.5 + 0.5;
+  float wB = sin((uvB.x + uvB.y) * 5.5  - t * 0.8)     * 0.5 + 0.5;
   float wN = vnoise(uvA * 2.5 + t * 0.20);
 
-  /* Purple / indigo palette — bright enough to see over dark body */
-  vec3 base   = vec3(0.06,  0.03,  0.14);   /* deep purple-black      */
-  vec3 purp   = vec3(0.60,  0.22,  1.00);   /* #9938ff vivid purple   */
-  vec3 indig  = vec3(0.35,  0.28,  1.00);   /* #5a47ff vivid indigo   */
-  vec3 violet = vec3(0.70,  0.40,  1.00);   /* #b366ff bright violet  */
-  vec3 rose   = vec3(0.72,  0.18,  0.82);   /* deep pink-purple       */
+  vec3 base   = vec3(0.06, 0.03, 0.14);
+  vec3 purp   = vec3(0.60, 0.22, 1.00);
+  vec3 indig  = vec3(0.35, 0.28, 1.00);
+  vec3 violet = vec3(0.70, 0.40, 1.00);
+  vec3 rose   = vec3(0.72, 0.18, 0.82);
 
   vec3 col = base;
   col = mix(col, purp,   wR * 0.55);
@@ -55,82 +53,93 @@ void main() {
   col = mix(col, violet, wB * 0.45);
   col = mix(col, rose,   wN * 0.22);
 
-  /* Light vignette — only darkens extreme corners, NOT center */
-  vec2 vc = uv - 0.5;
+  vec2 vc  = uv - 0.5;
   float vig = 1.0 - dot(vc, vc) * 1.2;
-  col *= clamp(vig, 0.3, 1.0);   /* clamp min 0.3 so center stays vivid */
+  col *= clamp(vig, 0.3, 1.0);
 
   gl_FragColor = vec4(col, 1.0);
 }
 `
+
+function compileShader(gl: WebGLRenderingContext, type: number, src: string): WebGLShader | null {
+  const shader = gl.createShader(type)!
+  gl.shaderSource(shader, src)
+  gl.compileShader(shader)
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error("[WebGLShader]", gl.getShaderInfoLog(shader))
+    gl.deleteShader(shader)
+    return null
+  }
+  return shader
+}
 
 export function WebGLShader() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current!
+    const glOrNull = canvas.getContext("webgl")
+    if (!glOrNull) { console.error("[WebGLShader] WebGL not supported"); return }
+    const gl = glOrNull  // non-nullable from here; preserves type inside closures
 
-    let renderer: THREE.WebGLRenderer
-    try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false })
-    } catch (e) {
-      console.error("[WebGLShader] WebGL init failed:", e)
+    const vert = compileShader(gl, gl.VERTEX_SHADER,   VERT)
+    const frag = compileShader(gl, gl.FRAGMENT_SHADER, FRAG)
+    if (!vert || !frag) return
+
+    const program = gl.createProgram()!
+    gl.attachShader(program, vert)
+    gl.attachShader(program, frag)
+    gl.linkProgram(program)
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error("[WebGLShader] Link error:", gl.getProgramInfoLog(program))
       return
     }
+    gl.useProgram(program)
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+    // Full-screen quad (two triangles)
+    const buf = gl.createBuffer()!
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+      -1, -1,   1, -1,  -1,  1,
+      -1,  1,   1, -1,   1,  1,
+    ]), gl.STATIC_DRAW)
 
-    const scene    = new THREE.Scene()
-    const camera   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-    const geometry = new THREE.PlaneGeometry(2, 2)
-    const uniforms = {
-      uTime:       { value: 0 },
-      uResolution: { value: new THREE.Vector2() },
-    }
-    const material = new THREE.ShaderMaterial({
-      vertexShader: VERT,
-      fragmentShader: FRAG,
-      uniforms,
-    })
-    scene.add(new THREE.Mesh(geometry, material))
+    const posLoc = gl.getAttribLocation(program, "a_position")
+    gl.enableVertexAttribArray(posLoc)
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
+
+    const uTimeLoc = gl.getUniformLocation(program, "uTime")
+    const uResLoc  = gl.getUniformLocation(program, "uResolution")
 
     function resize() {
-      const w = window.innerWidth
-      const h = window.innerHeight
-      // setSize also updates canvas.style.width/height to CSS px values
-      renderer.setSize(w, h)
-      // Resolution in actual framebuffer pixels (device pixels)
-      uniforms.uResolution.value.set(
-        w * renderer.getPixelRatio(),
-        h * renderer.getPixelRatio(),
-      )
+      const dpr = Math.min(window.devicePixelRatio, 1.5)
+      canvas.width  = window.innerWidth  * dpr
+      canvas.height = window.innerHeight * dpr
+      gl.viewport(0, 0, canvas.width, canvas.height)
+      gl.uniform2f(uResLoc, canvas.width, canvas.height)
     }
     resize()
     window.addEventListener("resize", resize)
 
-    const timer = new THREE.Timer()
     let raf: number
-    function tick(timestamp: number) {
+    function tick() {
+      gl.uniform1f(uTimeLoc, performance.now() / 1000)
+      gl.drawArrays(gl.TRIANGLES, 0, 6)
       raf = requestAnimationFrame(tick)
-      timer.update(timestamp)
-      uniforms.uTime.value = timer.getElapsed()
-      renderer.render(scene, camera)
     }
     raf = requestAnimationFrame(tick)
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener("resize", resize)
-      geometry.dispose()
-      material.dispose()
-      renderer.dispose()
+      gl.deleteBuffer(buf)
+      gl.deleteShader(vert)
+      gl.deleteShader(frag)
+      gl.deleteProgram(program)
     }
   }, [])
 
   return (
-    // Wrapper div is position:fixed — unaffected by any parent stacking context.
-    // Canvas fills wrapper 100%. Three.js setSize() also sets canvas style px,
-    // which is fine because the wrapper constrains layout.
     <div
       style={{
         position: "fixed",

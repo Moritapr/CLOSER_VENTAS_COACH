@@ -2,6 +2,8 @@ import { useState } from "react"
 import { UploadZone } from "@/components/UploadZone"
 import { LoadingState } from "@/components/LoadingState"
 import { AnalysisReport, type AnalysisResult } from "@/components/AnalysisReport"
+import { LoginScreen } from "@/components/LoginScreen"
+import { useAuth } from "@/hooks/useAuth"
 
 type AppState = "idle" | "loading" | "done"
 
@@ -37,6 +39,7 @@ const MOCK_RESULT: AnalysisResult = {
 }
 
 export function App() {
+  const { isAuthenticated, login } = useAuth()
   const [state, setState] = useState<AppState>("idle")
   const [fileName, setFileName] = useState("")
   const [result, setResult] = useState<AnalysisResult | null>(null)
@@ -55,6 +58,10 @@ export function App() {
     setState("idle")
     setFileName("")
     setResult(null)
+  }
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={login} />
   }
 
   return (

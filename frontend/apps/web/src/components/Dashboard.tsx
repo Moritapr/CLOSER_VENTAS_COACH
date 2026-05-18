@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+
 export interface CallRecord {
   id: string
   date: string
@@ -19,36 +21,69 @@ interface DashboardProps {
   onViewCall: (id: string) => void
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const color = score >= 80 ? "#16a34a" : score >= 60 ? "#ca8a04" : "#dc2626"
+const GLASS = {
+  background: "rgba(255, 255, 255, 0.03)",
+  backdropFilter: "blur(24px)",
+  WebkitBackdropFilter: "blur(24px)",
+  border: "1px solid rgba(139, 92, 246, 0.18)",
+  borderRadius: 16,
+} as const
+
+function scoreHue(s: number) { return s <= 50 ? s * 0.9 : 45 + (s - 50) * 1.5 }
+
+function ScorePill({ score }: { score: number }) {
+  const hue = scoreHue(score)
+  const color = `hsl(${hue}, 80%, 62%)`
+  const [w, setW] = useState(0)
+  useEffect(() => { const t = setTimeout(() => setW(score), 100); return () => clearTimeout(t) }, [score])
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, backgroundColor: color }} />
+    <div className="flex items-center gap-2 shrink-0 w-24">
+      <div style={{ flex: 1, height: 4, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{
+          height: "100%", width: `${w}%`, borderRadius: 999,
+          background: color,
+          boxShadow: `0 0 8px ${color}88`,
+          transition: "width 0.8s cubic-bezier(0.4,0,0.2,1)",
+        }} />
       </div>
-      <span className="text-xs font-medium tabular-nums w-7 text-right" style={{ color }}>{score}</span>
+      <span className="text-xs font-bold tabular-nums w-6 text-right" style={{ color }}>{score}</span>
     </div>
   )
 }
 
 function WeeklyChart({ data }: { data: { label: string; score: number }[] }) {
-  const max = 100
-  const h = 80
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 150); return () => clearTimeout(t) }, [])
+  const maxH = 72
 
   return (
-    <div className="flex items-end gap-2 h-24 pt-4">
-      {data.map(({ label, score }) => (
-        <div key={label} className="flex flex-col items-center gap-1 flex-1">
-          <span className="text-xs text-muted-foreground tabular-nums">{score}</span>
-          <div className="w-full rounded-t-sm bg-primary/20 relative" style={{ height: h }}>
-            <div
-              className="absolute bottom-0 w-full rounded-t-sm bg-primary transition-all"
-              style={{ height: `${(score / max) * h}px` }}
-            />
+    <div className="flex items-end gap-2 pt-2" style={{ height: 100 }}>
+      {data.map(({ label, score }, i) => {
+        const hue = scoreHue(score)
+        const color = `hsl(${hue}, 80%, 62%)`
+        const barH = mounted ? (score / 100) * maxH : 0
+        return (
+          <div key={label} className="flex flex-col items-center gap-1 flex-1">
+            <span className="text-xs font-bold tabular-nums" style={{ color }}>
+              {mounted ? score : ""}
+            </span>
+            <div style={{ height: maxH, width: "100%", display: "flex", alignItems: "flex-end" }}>
+              <div
+                style={{
+                  width: "100%",
+                  height: barH,
+                  borderRadius: "6px 6px 2px 2px",
+                  background: `linear-gradient(to top, ${color}cc, ${color}44)`,
+                  boxShadow: mounted ? `0 0 12px ${color}55` : undefined,
+                  transition: `height 0.6s cubic-bezier(0.4,0,0.2,1) ${i * 80}ms`,
+                }}
+              />
+            </div>
+            <span className="text-xs" style={{ color: "rgba(237,233,254,0.38)" }}>{label}</span>
           </div>
-          <span className="text-xs text-muted-foreground">{label}</span>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -57,72 +92,100 @@ export function Dashboard({ data, onViewCall }: DashboardProps) {
   const avgScore = data.calls.length
     ? Math.round(data.calls.reduce((a, c) => a + c.score, 0) / data.calls.length)
     : 0
+  const worstPhase = data.phaseFails[0]
+  const bestWeek = Math.max(...data.weeklyScores.map((w) => w.score))
 
-  const worstPhase = data.phaseFails.reduce(
-    (worst, p) => (p.failCount > worst.failCount ? p : worst),
-    data.phaseFails[0]
-  )
+  const stats = [
+    { label: "Llamadas", value: String(data.calls.length), glow: false },
+    { label: "Score promedio", value: String(avgScore), glow: true },
+    { label: "Mejor semana", value: String(bestWeek), glow: true },
+    { label: "Fase más débil", value: worstPhase?.name.split(" ")[0] ?? "—", glow: false, small: true },
+  ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 animate-fade-slide-up">
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: "Llamadas", value: data.calls.length },
-          { label: "Score promedio", value: avgScore },
-          { label: "Mejor semana", value: Math.max(...data.weeklyScores.map((w) => w.score)) },
-          { label: "Fase más débil", value: worstPhase?.name.split(" ")[0] ?? "—", small: true },
-        ].map(({ label, value, small }) => (
-          <div key={label}
-            className="rounded-xl border p-4 space-y-1 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 cursor-default">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className={`font-bold ${small ? "text-base leading-tight" : "text-2xl"}`}>{value}</p>
+        {stats.map(({ label, value, glow, small }) => (
+          <div
+            key={label}
+            className="p-4 space-y-1 transition-all duration-200 cursor-default"
+            style={{
+              ...GLASS,
+              boxShadow: glow ? "0 0 25px rgba(139,92,246,0.18), 0 0 50px rgba(139,92,246,0.07)" : undefined,
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"
+              ;(e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 35px rgba(139,92,246,0.32), 0 0 70px rgba(139,92,246,0.14)"
+              ;(e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.38)"
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.transform = ""
+              ;(e.currentTarget as HTMLDivElement).style.boxShadow = glow ? "0 0 25px rgba(139,92,246,0.18), 0 0 50px rgba(139,92,246,0.07)" : ""
+              ;(e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.18)"
+            }}
+          >
+            <p className="text-xs" style={{ color: "rgba(237,233,254,0.42)" }}>{label}</p>
+            <p
+              className={`font-black ${small ? "text-base leading-tight" : "text-3xl"}`}
+              style={{
+                color: glow ? "#c4b5fd" : "#ede9fe",
+                textShadow: glow ? "0 0 20px rgba(167,139,250,0.5)" : undefined,
+              }}
+            >
+              {value}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Weekly chart */}
-      <div className="rounded-xl border p-5 space-y-2">
-        <h3 className="font-semibold text-sm">Progreso semanal</h3>
+      <div className="p-5 space-y-3" style={GLASS}>
+        <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Progreso semanal</p>
+        <div className="gradient-sep" />
         <WeeklyChart data={data.weeklyScores} />
       </div>
 
       {/* Phase fails + Objections */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-xl border p-5 space-y-3">
-          <h3 className="font-semibold text-sm">Fases donde más fallás</h3>
-          <div className="space-y-3">
-            {data.phaseFails.map((p) => (
-              <div key={p.name} className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{p.name}</span>
-                  <span className="font-medium text-red-600 dark:text-red-400">
-                    {p.failCount}/{p.total}
-                  </span>
+        <div className="p-5 space-y-4" style={GLASS}>
+          <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Fases donde más fallás</p>
+          <div className="gradient-sep" />
+          <div className="space-y-4">
+            {data.phaseFails.map((p) => {
+              const pct = (p.failCount / p.total) * 100
+              return (
+                <div key={p.name} className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span style={{ color: "rgba(237,233,254,0.55)" }}>{p.name}</span>
+                    <span className="font-bold" style={{ color: "#f87171" }}>{p.failCount}/{p.total}</span>
+                  </div>
+                  <div style={{ height: 4, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%", width: `${pct}%`, borderRadius: 999,
+                      background: "linear-gradient(to right, #f87171, #fbbf24)",
+                      boxShadow: "0 0 8px rgba(248,113,113,0.4)",
+                      transition: "width 0.7s ease",
+                    }} />
+                  </div>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-red-500"
-                    style={{ width: `${(p.failCount / p.total) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
-        <div className="rounded-xl border p-5 space-y-3">
-          <h3 className="font-semibold text-sm">Objeciones frecuentes</h3>
-          <div className="space-y-2">
+        <div className="p-5 space-y-4" style={GLASS}>
+          <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Objeciones frecuentes</p>
+          <div className="gradient-sep" />
+          <div className="space-y-3">
             {data.topObjections.map((obj) => (
               <div key={obj.type} className="flex items-center justify-between gap-2">
-                <span className="text-sm text-muted-foreground truncate">{obj.type}</span>
+                <span className="text-sm truncate" style={{ color: "rgba(237,233,254,0.55)" }}>{obj.type}</span>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-xs text-green-600 dark:text-green-400">
-                    {obj.handledCount}✓
-                  </span>
-                  <span className="text-xs text-muted-foreground">/</span>
-                  <span className="text-xs font-medium">{obj.count}</span>
+                  <span className="text-xs font-semibold" style={{ color: "#34d399" }}>{obj.handledCount}✓</span>
+                  <span className="text-xs" style={{ color: "rgba(237,233,254,0.25)" }}>/</span>
+                  <span className="text-xs font-bold" style={{ color: "#ede9fe" }}>{obj.count}</span>
                 </div>
               </div>
             ))}
@@ -131,10 +194,11 @@ export function Dashboard({ data, onViewCall }: DashboardProps) {
       </div>
 
       {/* Call history */}
-      <div className="rounded-xl border p-5 space-y-3">
-        <h3 className="font-semibold text-sm">Historial de llamadas</h3>
+      <div className="p-5 space-y-4" style={GLASS}>
+        <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Historial de llamadas</p>
+        <div className="gradient-sep" />
         {data.calls.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">
+          <p className="text-sm text-center py-6" style={{ color: "rgba(237,233,254,0.35)" }}>
             Todavía no analizaste ninguna llamada.
           </p>
         ) : (
@@ -143,16 +207,34 @@ export function Dashboard({ data, onViewCall }: DashboardProps) {
               <button
                 key={call.id}
                 onClick={() => onViewCall(call.id)}
-                className="w-full text-left rounded-lg border p-3 transition-all duration-200 hover:bg-muted/50 hover:shadow-sm hover:-translate-y-px hover:border-primary/20"
+                className="w-full text-left rounded-xl p-3 transition-all duration-200"
+                style={{
+                  background: "rgba(139,92,246,0.06)",
+                  border: "1px solid rgba(139,92,246,0.12)",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget
+                  el.style.background = "rgba(139,92,246,0.12)"
+                  el.style.borderColor = "rgba(139,92,246,0.28)"
+                  el.style.transform = "translateY(-2px)"
+                  el.style.boxShadow = "0 0 20px rgba(139,92,246,0.18)"
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget
+                  el.style.background = "rgba(139,92,246,0.06)"
+                  el.style.borderColor = "rgba(139,92,246,0.12)"
+                  el.style.transform = ""
+                  el.style.boxShadow = ""
+                }}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{call.fileName}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-semibold truncate" style={{ color: "#ede9fe" }}>{call.fileName}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(237,233,254,0.38)" }}>
                       {call.date} · {call.duration} · Falla: {call.weakestPhase}
                     </p>
                   </div>
-                  <ScoreBar score={call.score} />
+                  <ScorePill score={call.score} />
                 </div>
               </button>
             ))}

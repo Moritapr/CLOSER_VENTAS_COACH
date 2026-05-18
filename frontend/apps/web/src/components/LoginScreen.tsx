@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { WebGLShader } from "@/components/ui/web-gl-shader"
-import { LiquidButton } from "@/components/ui/liquid-glass-button"
 
 interface LoginScreenProps {
   onLogin: (password: string) => boolean
@@ -10,6 +9,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [password, setPassword] = useState("")
   const [error, setError]       = useState(false)
   const [loading, setLoading]   = useState(false)
+  const [btnHover, setBtnHover] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -122,14 +122,29 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               )}
             </div>
 
-            {/* Liquid glass button */}
-            <LiquidButton
+            <button
               type="submit"
               disabled={!password || loading}
-              fullWidth
+              onMouseEnter={() => setBtnHover(true)}
+              onMouseLeave={() => setBtnHover(false)}
+              style={{
+                width: "100%",
+                height: 44,
+                borderRadius: 8,
+                border: "none",
+                cursor: !password || loading ? "not-allowed" : "pointer",
+                background: btnHover && !(!password || loading)
+                  ? "linear-gradient(135deg, #9061f9, #6366f1)"
+                  : "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 700,
+                opacity: !password || loading ? 0.5 : 1,
+                transition: "background 0.2s ease, opacity 0.2s ease",
+              }}
             >
               {loading ? "Verificando..." : "Entrar"}
-            </LiquidButton>
+            </button>
           </form>
         </div>
       </div>

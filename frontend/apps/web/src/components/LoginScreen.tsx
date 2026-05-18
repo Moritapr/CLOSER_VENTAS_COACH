@@ -33,7 +33,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         className="animate-fade-slide-up"
         style={{
           position: "relative",
-          zIndex: 1,
+          zIndex: 10,
           width: "100%",
           maxWidth: 360,
           display: "flex",

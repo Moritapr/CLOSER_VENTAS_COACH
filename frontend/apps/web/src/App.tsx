@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { HeroUpload } from "@/components/HeroUpload"
 import { LoadingState } from "@/components/LoadingState"
 import { AnalysisReport, type AnalysisResult } from "@/components/AnalysisReport"
@@ -86,33 +86,8 @@ function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): An
   }
 }
 
-const MOCK_DASHBOARD: DashboardData = {
-  calls: [
-    { id: "1", date: "18 may", fileName: "llamada-garcia.mp3", duration: "12:34", score: 74, weakestPhase: "Cierre" },
-    { id: "2", date: "17 may", fileName: "llamada-rodriguez.mp3", duration: "08:12", score: 61, weakestPhase: "Presentación IUL" },
-    { id: "3", date: "16 may", fileName: "llamada-martinez.mp3", duration: "15:40", score: 88, weakestPhase: "Seguimiento" },
-    { id: "4", date: "15 may", fileName: "llamada-lopez.mp3", duration: "10:05", score: 55, weakestPhase: "Manejo de objeciones" },
-    { id: "5", date: "14 may", fileName: "llamada-sanchez.mp3", duration: "13:22", score: 79, weakestPhase: "Cierre" },
-  ],
-  weeklyScores: [
-    { label: "Sem 1", score: 58 },
-    { label: "Sem 2", score: 65 },
-    { label: "Sem 3", score: 71 },
-    { label: "Sem 4", score: 79 },
-    { label: "Esta", score: 74 },
-  ],
-  phaseFails: [
-    { name: "Cierre", failCount: 4, total: 5 },
-    { name: "Presentación IUL", failCount: 3, total: 5 },
-    { name: "Manejo de objeciones", failCount: 3, total: 5 },
-    { name: "Calificación", failCount: 1, total: 5 },
-  ],
-  topObjections: [
-    { type: "Es muy caro", count: 5, handledCount: 2 },
-    { type: "Necesito pensarlo", count: 4, handledCount: 3 },
-    { type: "Ya tengo seguro", count: 3, handledCount: 2 },
-    { type: "No confío en seguros", count: 2, handledCount: 0 },
-  ],
+const EMPTY_DASHBOARD: DashboardData = {
+  calls: [], weeklyScores: [], phaseFails: [], topObjections: [],
 }
 
 export function App() {
@@ -122,6 +97,18 @@ export function App() {
   const [fileName, setFileName] = useState("")
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)
+  const [dashboardData, setDashboardData] = useState<DashboardData>(EMPTY_DASHBOARD)
+  const [dashboardLoading, setDashboardLoading] = useState(false)
+
+  useEffect(() => {
+    if (tab !== "dashboard") return
+    setDashboardLoading(true)
+    fetch(`${API_BASE}/api/dashboard`)
+      .then((r) => { if (!r.ok) throw new Error(); return r.json() })
+      .then((data: DashboardData) => setDashboardData(data))
+      .catch(() => {})
+      .finally(() => setDashboardLoading(false))
+  }, [tab])
 
   async function handleFileSelect(file: File) {
     setFileName(file.name)
@@ -259,10 +246,16 @@ export function App() {
           )}
 
           {tab === "dashboard" && (
-            <Dashboard
-              data={MOCK_DASHBOARD}
-              onViewCall={(id) => console.log("view call", id)}
-            />
+            dashboardLoading ? (
+              <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(237,233,254,0.38)", fontSize: 14 }}>
+                Cargando dashboard...
+              </div>
+            ) : (
+              <Dashboard
+                data={dashboardData}
+                onViewCall={(id) => console.log("view call", id)}
+              />
+            )
           )}
         </div>
       </main>

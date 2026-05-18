@@ -84,9 +84,11 @@ async def analizar_llamada(transcripcion: str) -> dict:
 
     import json, re
     texto = respuesta.content[0].text.strip()
-    match = re.search(r'```(?:json)?\s*([\s\S]*?)```', texto)
-    if match:
-        texto = match.group(1).strip()
+    if texto.startswith("```"):
+        texto = texto.split("```")[1]
+        if texto.startswith("json"):
+            texto = texto[4:]
+    texto = texto.strip()
 
     print(f"CLAUDE RESPONSE: {repr(texto)}")
 

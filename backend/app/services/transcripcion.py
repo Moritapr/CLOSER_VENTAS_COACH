@@ -1,18 +1,17 @@
-from openai import AsyncOpenAI
+from groq import Groq
 from app.core.config import settings
 
-client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+_client = Groq(api_key=settings.GROQ_API_KEY)
 
-async def transcribir_audio(ruta_archivo: str) -> dict:
-    with open(ruta_archivo, "rb") as audio:
-        respuesta = await client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio,
-            language="es",
-            response_format="verbose_json"
-        )
+
+async def transcribir(archivo_bytes: bytes, nombre_archivo: str) -> dict:
+    """Transcribe an audio file via Groq Whisper and return text + duration."""
+    transcripcion = _client.audio.transcriptions.create(
+        model="whisper-large-v3",
+        file=(nombre_archivo, archivo_bytes, "audio/mpeg"),
+        response_format="verbose_json",
+    )
     return {
-        "texto": respuesta.text,
-        "duracion": respuesta.duration,
-        "idioma": respuesta.language
+        "transcripcion": transcripcion.text,
+        "duracion_segundos": int(getattr(transcripcion, "duration", 0)),
     }

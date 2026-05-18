@@ -211,7 +211,7 @@ export function HeroUpload({ onFileSelect }: HeroUploadProps) {
         </div>
 
         {/* Right widgets — desktop only */}
-        <div className="hero-widget-right" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="hero-widget-right">
           <FloatingWidget
             icon={<BrainIcon />}
             title="IA detecta patrones"
@@ -246,6 +246,8 @@ export function HeroUpload({ onFileSelect }: HeroUploadProps) {
         }
         .hero-widget-right {
           display: none;
+          flex-direction: column;
+          gap: 16px;
           justify-content: center;
         }
       `}</style>

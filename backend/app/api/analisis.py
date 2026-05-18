@@ -1,11 +1,14 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.services.analisis import analizar_llamada
+from app.services.guardar import guardar_analisis
 
 router = APIRouter(prefix="/api", tags=["analisis"])
 
 class TranscripcionRequest(BaseModel):
     transcripcion: str
+    nombre_archivo: str = None
+    duracion_segundos: float = None
 
 @router.post("/analizar")
 async def analizar(request: TranscripcionRequest):
@@ -13,6 +16,12 @@ async def analizar(request: TranscripcionRequest):
         raise HTTPException(status_code=400, detail="Transcripción muy corta o vacía")
     try:
         resultado = await analizar_llamada(request.transcripcion)
-        return {"status": "ok", "analisis": resultado}
+        guardado = await guardar_analisis(
+            transcripcion=request.transcripcion,
+            analisis=resultado,
+            nombre_archivo=request.nombre_archivo,
+            duracion_segundos=request.duracion_segundos
+        )
+        return {"status": "ok", "id": guardado["id"], "analisis": resultado}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en análisis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")

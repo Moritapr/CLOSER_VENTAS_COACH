@@ -82,6 +82,9 @@ async def analizar_llamada(transcripcion: str) -> dict:
         ]
     )
 
-    import json
+    import json, re
     texto = respuesta.content[0].text.strip()
+    match = re.search(r'```(?:json)?\s*([\s\S]*?)```', texto)
+    if match:
+        texto = match.group(1).strip()
     return json.loads(texto)

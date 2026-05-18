@@ -10,7 +10,7 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false)
 
   function handleFile(file: File) {
-    if (file.type === "audio/mpeg" || file.name.endsWith(".mp3")) onFileSelect(file)
+    if (file.type.startsWith("audio/") || file.type.startsWith("video/")) onFileSelect(file)
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -71,7 +71,7 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
       <div className="space-y-1">
         <p className="text-lg font-bold" style={{ color: "#ede9fe" }}>Subí tu grabación</p>
         <p className="text-sm" style={{ color: "rgba(237,233,254,0.45)" }}>
-          Arrastrá un MP3 o hacé clic para seleccionar
+          Arrastrá un archivo de audio o hacé clic para seleccionar
         </p>
       </div>
 
@@ -87,12 +87,12 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
           cursor: disabled ? "not-allowed" : "pointer",
         }}
       >
-        Seleccionar MP3
+        Seleccionar archivo
       </button>
 
-      <p className="text-xs" style={{ color: "rgba(237,233,254,0.3)" }}>Solo archivos .mp3</p>
+      <p className="text-xs" style={{ color: "rgba(237,233,254,0.3)" }}>MP3, WAV, M4A, MP4, OGG</p>
 
-      <input ref={inputRef} type="file" accept=".mp3,audio/mpeg" className="hidden"
+      <input ref={inputRef} type="file" accept="audio/*,video/mp4" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
         disabled={disabled} />
     </div>

@@ -1,0 +1,114 @@
+/* ── Dark Premium Theme ── purple/indigo palette, glassmorphism, glows ── */
+
+:root {
+  color-scheme: dark;
+  --background:          #07050e;
+  --foreground:          #ede9fe;
+  --card:                rgba(139, 92, 246, 0.06);
+  --card-foreground:     #ede9fe;
+  --popover:             #100c22;
+  --popover-foreground:  #ede9fe;
+  --primary:             #a78bfa;
+  --primary-foreground:  #1a0050;
+  --secondary:           rgba(139, 92, 246, 0.14);
+  --secondary-foreground:#c4b5fd;
+  --muted:               rgba(139, 92, 246, 0.09);
+  --muted-foreground:    rgba(237, 233, 254, 0.42);
+  --accent:              rgba(99, 102, 241, 0.18);
+  --accent-foreground:   #c7d2fe;
+  --destructive:         #f87171;
+  --border:              rgba(139, 92, 246, 0.18);
+  --input:               rgba(139, 92, 246, 0.13);
+  --ring:                rgba(167, 139, 250, 0.45);
+  --radius:              0.75rem;
+}
+
+/* also override .dark so ThemeProvider doesn't fight us */
+.dark {
+  --background:          #07050e;
+  --foreground:          #ede9fe;
+  --card:                rgba(139, 92, 246, 0.06);
+  --card-foreground:     #ede9fe;
+  --popover:             #100c22;
+  --popover-foreground:  #ede9fe;
+  --primary:             #a78bfa;
+  --primary-foreground:  #1a0050;
+  --secondary:           rgba(139, 92, 246, 0.14);
+  --secondary-foreground:#c4b5fd;
+  --muted:               rgba(139, 92, 246, 0.09);
+  --muted-foreground:    rgba(237, 233, 254, 0.42);
+  --accent:              rgba(99, 102, 241, 0.18);
+  --accent-foreground:   #c7d2fe;
+  --destructive:         #f87171;
+  --border:              rgba(139, 92, 246, 0.18);
+  --input:               rgba(139, 92, 246, 0.13);
+  --ring:                rgba(167, 139, 250, 0.45);
+}
+
+/* ── Global body background ── radial glow from top-center ── */
+body {
+  background:
+    radial-gradient(ellipse 110% 65% at 50% -8%,  rgba(109, 60, 210, 0.26) 0%, transparent 65%),
+    radial-gradient(ellipse  55% 45% at 88% 88%,  rgba(79,  70, 229, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse  40% 30% at  8% 70%,  rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    #07050e;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* ── Glass utility ── */
+.glass {
+  background:  rgba(255, 255, 255, 0.033);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(139, 92, 246, 0.18);
+}
+
+.glass-dark {
+  background:  rgba(10, 6, 25, 0.55);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+}
+
+/* ── Glow utilities ── */
+.glow-sm {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.18), 0 0 40px rgba(139, 92, 246, 0.07);
+}
+
+.glow-md {
+  box-shadow: 0 0 35px rgba(139, 92, 246, 0.28), 0 0 70px rgba(139, 92, 246, 0.12);
+}
+
+.glow-score {
+  box-shadow:
+    0 0 60px  rgba(139, 92, 246, 0.40),
+    0 0 120px rgba(139, 92, 246, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* ── Gradient separator ── */
+.gradient-sep {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(139, 92, 246, 0.38), transparent);
+  border: none;
+  margin: 0;
+}
+
+/* ── Shimmer skeleton for dark theme ── */
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position:  400px 0; }
+}
+
+.skeleton-dark {
+  background: linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0.06) 25%,
+    rgba(139, 92, 246, 0.14) 50%,
+    rgba(139, 92, 246, 0.06) 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+}

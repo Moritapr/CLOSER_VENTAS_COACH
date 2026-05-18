@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.upload import router as upload_router
+from app.api.analisis import router as analisis_router
 
 app = FastAPI(
     title="Closer Ventas Coach API",
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(upload_router)
+app.include_router(analisis_router)
 
 @app.get("/")
 def root():

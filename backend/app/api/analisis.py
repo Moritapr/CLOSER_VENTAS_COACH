@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.services.analisis import analizar_llamada
@@ -24,4 +25,5 @@ async def analizar(request: TranscripcionRequest):
         )
         return {"status": "ok", "id": guardado["id"], "analisis": resultado}
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")

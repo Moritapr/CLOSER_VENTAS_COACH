@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react"
 
 const STEPS = [
-  "Subiendo archivo...",
-  "Transcribiendo audio con Whisper...",
-  "Analizando llamada con Claude...",
-  "Generando reporte...",
+  { label: "Subiendo audio...",    pct: 18 },
+  { label: "Transcribiendo...",    pct: 55 },
+  { label: "Analizando con IA...", pct: 82 },
+  { label: "Generando reporte...", pct: 100 },
 ]
+
+// When each step transition fires (ms). Intentionally conservative —
+// the real bottleneck is Whisper + Claude on the server.
+const STEP_DELAYS = [4_000, 20_000, 38_000]
 
 function DarkSkeleton({ w = "100%", h = "12px" }: { w?: string; h?: string }) {
   return <div className="skeleton-dark" style={{ width: w, height: h }} />
@@ -17,13 +21,29 @@ interface LoadingStateProps {
 
 export function LoadingState({ fileName }: LoadingStateProps) {
   const [step, setStep] = useState(0)
+  const [pct, setPct] = useState(0)
 
+  // Advance step index on a timer schedule
   useEffect(() => {
-    const timers = [800, 1800, 2600].map((delay, i) =>
+    const timers = STEP_DELAYS.map((delay, i) =>
       setTimeout(() => setStep(i + 1), delay)
     )
     return () => timers.forEach(clearTimeout)
   }, [])
+
+  // Smoothly ease pct toward the current step's target
+  useEffect(() => {
+    const target = STEPS[step].pct
+    const id = setInterval(() => {
+      setPct(prev => {
+        if (prev >= target) { clearInterval(id); return prev }
+        return Math.min(target, prev + Math.max(0.4, (target - prev) * 0.07))
+      })
+    }, 80)
+    return () => clearInterval(id)
+  }, [step])
+
+  const displayPct = Math.round(pct)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -36,6 +56,7 @@ export function LoadingState({ fileName }: LoadingStateProps) {
           border: "1px solid rgba(139, 92, 246, 0.22)",
         }}
       >
+        {/* Header */}
         <div className="text-center space-y-0.5">
           <p className="font-bold" style={{ color: "#ede9fe" }}>Analizando llamada</p>
           <p className="text-xs truncate" style={{ color: "rgba(237,233,254,0.42)" }}>{fileName}</p>
@@ -43,12 +64,43 @@ export function LoadingState({ fileName }: LoadingStateProps) {
 
         <div className="gradient-sep" />
 
+        {/* Progress bar */}
+        <div className="space-y-1.5">
+          <div style={{
+            height: 6,
+            borderRadius: 99,
+            background: "rgba(139,92,246,0.14)",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              height: "100%",
+              width: `${pct}%`,
+              borderRadius: 99,
+              background: "linear-gradient(90deg, #7c3aed, #a78bfa)",
+              boxShadow: "0 0 12px rgba(167,139,250,0.55)",
+              transition: "width 0.08s linear",
+            }} />
+          </div>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: 11,
+            color: "rgba(167,139,250,0.7)",
+          }}>
+            <span>{STEPS[step].label}</span>
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>{displayPct}%</span>
+          </div>
+        </div>
+
+        <div className="gradient-sep" />
+
+        {/* Step list */}
         <div className="space-y-3">
           {STEPS.map((s, i) => {
-            const done = i < step
+            const done   = i < step
             const active = i === step
             return (
-              <div key={s} className="flex items-center gap-3">
+              <div key={s.label} className="flex items-center gap-3">
                 <div
                   className="h-2 w-2 rounded-full shrink-0 transition-all duration-500"
                   style={{
@@ -61,7 +113,7 @@ export function LoadingState({ fileName }: LoadingStateProps) {
                   className="text-sm transition-colors duration-500 flex-1"
                   style={{ color: done || active ? "#ede9fe" : "rgba(237,233,254,0.35)" }}
                 >
-                  {s}
+                  {s.label}
                 </p>
                 {done && <span className="text-xs" style={{ color: "#a78bfa" }}>✓</span>}
               </div>
@@ -72,7 +124,6 @@ export function LoadingState({ fileName }: LoadingStateProps) {
 
       {/* Skeleton preview */}
       <div className="space-y-4">
-        {/* Score skeleton */}
         <div
           className="rounded-2xl p-6 space-y-3 text-center"
           style={{
@@ -87,7 +138,6 @@ export function LoadingState({ fileName }: LoadingStateProps) {
           <DarkSkeleton w="180px" h="12px" />
         </div>
 
-        {/* Phases skeleton */}
         <div
           className="rounded-2xl p-5 space-y-4"
           style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(139,92,246,0.15)" }}
@@ -104,7 +154,6 @@ export function LoadingState({ fileName }: LoadingStateProps) {
           ))}
         </div>
 
-        {/* Strengths / weaknesses skeleton */}
         <div className="grid grid-cols-2 gap-4">
           {[0, 1].map((j) => (
             <div key={j} className="rounded-2xl p-5 space-y-3"

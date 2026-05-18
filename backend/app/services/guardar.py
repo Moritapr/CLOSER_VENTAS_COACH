@@ -41,5 +41,18 @@ async def guardar_analisis(
         "analisis_completo": analisis
     }
 
+    if nombre_archivo and duracion_segundos is not None:
+        existing = (
+            supabase.table("analisis")
+            .select("*")
+            .eq("nombre_archivo", nombre_archivo)
+            .eq("duracion_segundos", duracion_segundos)
+            .limit(1)
+            .execute()
+        )
+        if existing.data:
+            print(f"DUPLICADO: '{nombre_archivo}' ya existe (id={existing.data[0]['id']}), omitiendo inserción")
+            return existing.data[0]
+
     resultado = supabase.table("analisis").insert(registro).execute()
     return resultado.data[0]

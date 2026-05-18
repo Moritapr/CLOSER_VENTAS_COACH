@@ -21,7 +21,7 @@ interface LoadingStateProps {
 
 export function LoadingState({ fileName }: LoadingStateProps) {
   const [step, setStep] = useState(0)
-  const [pct, setPct] = useState(0)
+  const [pct, setPct] = useState(3)
 
   // Advance step index on a timer schedule
   useEffect(() => {
@@ -67,9 +67,9 @@ export function LoadingState({ fileName }: LoadingStateProps) {
         {/* Progress bar */}
         <div className="space-y-1.5">
           <div style={{
-            height: 6,
+            height: 8,
             borderRadius: 99,
-            background: "rgba(139,92,246,0.14)",
+            background: "rgba(139,92,246,0.28)",
             overflow: "hidden",
           }}>
             <div style={{
@@ -77,8 +77,8 @@ export function LoadingState({ fileName }: LoadingStateProps) {
               width: `${pct}%`,
               borderRadius: 99,
               background: "linear-gradient(90deg, #7c3aed, #a78bfa)",
-              boxShadow: "0 0 12px rgba(167,139,250,0.55)",
-              transition: "width 0.08s linear",
+              boxShadow: "0 0 12px rgba(167,139,250,0.6)",
+              transition: "width 0.15s ease-out",
             }} />
           </div>
           <div style={{

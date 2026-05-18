@@ -87,4 +87,15 @@ async def analizar_llamada(transcripcion: str) -> dict:
     match = re.search(r'```(?:json)?\s*([\s\S]*?)```', texto)
     if match:
         texto = match.group(1).strip()
-    return json.loads(texto)
+
+    print(f"CLAUDE RESPONSE: {repr(texto)}")
+
+    if not texto:
+        raise ValueError("Claude devolvió una respuesta vacía")
+
+    try:
+        return json.loads(texto)
+    except json.JSONDecodeError as e:
+        print(f"JSON PARSE ERROR: {e}")
+        print(f"CONTENIDO COMPLETO:\n{texto}")
+        raise ValueError(f"La respuesta de Claude no es JSON válido: {e}")

@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth"
 type AppState = "idle" | "loading" | "done"
 type Tab = "analizar" | "dashboard"
 
-const API_BASE = "https://closerventascoach-production.up.railway.app"
+const API_BASE = "https://closer-ventas-coach.onrender.com"
 
 const PHASE_NAMES = [
   "Introducción",

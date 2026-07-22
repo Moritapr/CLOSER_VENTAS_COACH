@@ -16,7 +16,17 @@ REGLAS DE TONO:
   y escribe qué frase concreta debió decir el closer en ese instante.
 - Para cada fase que no se realizó correctamente, escribe en que_debio_decir una frase real lista para usar,
   no un consejo genérico. Ejemplo: "Oye [nombre], antes de contarte todo te mando mi licencia por WhatsApp
-  para que veas con quién estás hablando, ¿cuál es tu número?"."""
+  para que veas con quién estás hablando, ¿cuál es tu número?".
+
+REGLAS PARA FRICCIÓN, ENERGÍA Y TERMÓMETRO:
+- Para mapa_friccion, energia_closer y termometro_cliente básate solo en lo que está en el texto: palabras
+  exactas, respuestas cortas, evasivas, repeticiones, cambios de tema. No inventes tono de voz, silencios
+  ni lenguaje corporal que no puedas leer en la transcripción.
+- mapa_friccion no es una lista de errores genéricos: cada entrada es un momento puntual y real de la llamada
+  (con su fragmento exacto) donde el cliente se incomodó, desconfió, se desinteresó o el closer perdió el
+  control de la conversación — y qué debió hacer el closer justo ahí.
+- energia_closer y termometro_cliente describen una evolución real a lo largo de la llamada, no relleno:
+  si algo no cambió de inicio a fin, dilo así de simple en la observación."""
 
 PROMPT_ANALISIS = """Escuchaste esta llamada de ventas IUL. Analiza cada fase y responde SOLO en JSON.
 
@@ -87,6 +97,26 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
       "que_debio_decir": "<respuesta concreta que debió dar>"
     }}
   ],
+  "mapa_friccion": [
+    {{
+      "fragmento": "<cita textual exacta del momento de fricción>",
+      "tipo": "<incomodidad | desconfianza | desinteres | perdida_control>",
+      "explicacion": "<qué pasó en ese momento, en lenguaje de coach directo>",
+      "que_hacer": "<qué debió hacer el closer justo en ese momento>"
+    }}
+  ],
+  "energia_closer": {{
+    "inicio": "<alta | media | baja>",
+    "medio": "<alta | media | baja>",
+    "final": "<alta | media | baja>",
+    "observacion": "<cómo evolucionó la energía del closer durante la llamada>"
+  }},
+  "termometro_cliente": {{
+    "inicio": "<interesado | neutral | frio | hostil>",
+    "medio": "<interesado | neutral | frio | hostil>",
+    "final": "<interesado | neutral | frio | hostil>",
+    "observacion": "<cómo evolucionó el interés del cliente durante la llamada>"
+  }},
   "fortalezas": ["<cosa específica que hizo bien>"],
   "areas_de_mejora": ["<cosa específica que falló, con ejemplo de la llamada>"],
   "consejo_principal": "<el único consejo más importante para la próxima llamada, en lenguaje directo>"
@@ -96,7 +126,7 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
 async def analizar_llamada(transcripcion: str) -> dict:
     respuesta = await client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=4096,
+        max_tokens=8000,
         system=PROMPT_SISTEMA,
         messages=[
             {

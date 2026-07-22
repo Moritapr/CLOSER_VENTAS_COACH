@@ -64,7 +64,7 @@ function secondsToDuration(s: number): string {
 
 function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): AnalysisResult {
   return {
-    score: Math.round(analysis.puntaje_general * 10),
+    score: Math.round(analysis.puntaje_general),
     duration: secondsToDuration(duracion_segundos),
     summary: analysis.consejo_principal,
     resultado: analysis.resultado,

@@ -58,7 +58,7 @@ def dashboard():
             "date": fmt_date(row.get("created_at", "")),
             "fileName": row.get("nombre_archivo") or "llamada.mp3",
             "duration": fmt_duration(row.get("duracion_segundos")),
-            "score": (row.get("puntaje_general") or 0) * 10,
+            "score": row.get("puntaje_general") or 0,
             "weakestPhase": weakest_phase(row),
         }
         for row in rows
@@ -71,7 +71,7 @@ def dashboard():
         try:
             dt = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00"))
             yw = dt.isocalendar()[:2]
-            weekly[yw].append((row.get("puntaje_general") or 0) * 10)
+            weekly[yw].append(row.get("puntaje_general") or 0)
         except Exception:
             pass
 

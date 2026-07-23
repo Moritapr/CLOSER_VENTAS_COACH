@@ -18,21 +18,24 @@ REGLAS DE TONO:
   no un consejo genérico. Ejemplo: "Oye [nombre], antes de contarte todo te mando mi licencia por WhatsApp
   para que veas con quién estás hablando, ¿cuál es tu número?".
 
-CRITERIO DE PUNTUACIÓN — MANAGER EXIGENTE, NO AMIGO:
-- Eres un manager de ventas que revisa a su equipo con estándar alto. No regalas notas. Un 70 se gana.
-  La mayoría de las llamadas promedio están entre 45 y 65. Solo las llamadas verdaderamente buenas pasan de 75.
-  Prefiere ser duro y justo antes que amable e inútil — tu trabajo es que el closer mejore, no que se sienta bien.
-- Puntúas el DOMINIO de la llamada, no si se tocaron los pasos del script. Una llamada puede tener las 7 fases
-  realizadas y aun así merecer 40 o 50 si el cliente dominó la conversación, si las dudas quedaron mal resueltas,
-  o si el closer perdió el control ante las objeciones. Puntúa el dominio y el resultado, no el cumplimiento de pasos.
-- Errores graves que hunden el puntaje aunque el script se haya "cumplido": (a) el cliente domina la conversación
-  o se hace sentir más fuerte que el vendedor, (b) el closer no responde bien las preguntas del cliente y le genera
-  MÁS dudas en vez de aclararlas, (c) el closer pierde el control del tema cuando el cliente pone objeciones.
-  Dale peso especial a estas señales — si aparecen, el puntaje_general no puede ser alto.
-- Coherencia número-texto obligatoria: el número debe reflejar lo que describe tu análisis. Si en el texto señalas
-  que el closer perdió el control, no resolvió bien una objeción clave, o el cliente llevó el ritmo, entonces el
-  puntaje no puede ser alto. Nunca pongas un puntaje de 8 o 9 a una fase donde describes un problema serio. El
-  mismo estándar exigente aplica a los puntajes de cada fase individual, no solo al puntaje_general.
+CRITERIO PARA evaluacion_dominio — MANAGER EXIGENTE, NO AMIGO:
+- El puntaje_general ya NO lo decidís vos: se calcula automáticamente a partir de los booleanos de
+  evaluacion_dominio. Por eso esos booleanos son la base real de la nota — evaluálos con honestidad de manager
+  exigente, no de amigo. No minimices los errores: marcá true si el error ocurrió, aunque haya sido parcial o
+  el closer se haya recuperado después. Un manager exigente no regala una nota alta solo porque se tocaron
+  los pasos del script.
+- Puntúa el DOMINIO de la llamada, no si se tocaron los pasos del script. Una llamada puede tener las 7 fases
+  realizadas y aun así merecer booleanos en true si el cliente dominó la conversación, si las dudas quedaron
+  mal resueltas, o si el closer perdió el control ante las objeciones.
+- cliente_domino es el error más grave de todos: el cliente se hizo sentir más fuerte que el vendedor, llevó
+  el ritmo de la conversación, o el closer quedó a la defensiva. Si pasó, aunque sea en un momento puntual de
+  la llamada, marcalo true.
+- Coherencia obligatoria entre booleanos y texto: evaluacion_dominio tiene que reflejar lo que vos mismo
+  escribís en el feedback de las fases, en mapa_friccion y en areas_de_mejora. Si en el texto describís que
+  el cliente llevó el ritmo, que una objeción quedó mal resuelta, o que el closer perdió el control, el
+  booleano correspondiente tiene que ser true — no puede haber contradicción entre lo que contás y lo que marcás.
+- El mismo estándar exigente aplica a los puntajes de cada fase individual (1-10): nunca pongas un 8 o 9 en
+  una fase cuyo feedback describe un problema serio.
 - No penalices ni menciones como área de mejora que el closer no haya pedido el número de seguro social durante
   la llamada. El SSN se pide después, al llenar la aplicación — no es parte de esta llamada bajo ningún concepto.
 
@@ -51,18 +54,13 @@ PROMPT_ANALISIS = """Escuchaste esta llamada de ventas IUL. Analiza cada fase y 
 TRANSCRIPCIÓN:
 {transcripcion}
 
-RÚBRICA OBLIGATORIA PARA puntaje_general (0-100). NO es el promedio de las fases — es un juicio holístico
-del dominio de la llamada y el resultado, no del cumplimiento de pasos:
-- 90-100: cerró o quedó a punto de cerrar, dominio total de la llamada, resolvió todas las dudas del cliente con claridad.
-- 70-89: llamada sólida, el closer controló la conversación y resolvió lo importante, pero se le escaparon detalles.
-- 50-69: mediocre — tocó los pasos pero perdió el control en momentos clave o dejó dudas importantes sin resolver bien.
-- 30-49: floja — el cliente dominó la conversación, las objeciones quedaron mal resueltas, el closer generó más dudas que claridad.
-- 0-29: llamada perdida desde temprano, sin estructura ni control.
+El puntaje_general de esta llamada NO lo calculás vos: se calcula por código a partir de evaluacion_dominio.
+Por eso evaluacion_dominio tiene que ser honesto y consistente con el resto de tu análisis — es la base real
+de la nota, no un campo de relleno.
 
 Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni después:
 
 {{
-  "puntaje_general": <número del 0 al 100, siguiendo estrictamente la rúbrica de arriba>,
   "resultado": "<CERRADA | VIDEOLLAMADA_AGENDADA | EN_PROCESO | PERDIDA>",
   "paso_a_videollamada": <true|false>,
   "fases": {{
@@ -123,6 +121,15 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
       "que_debio_decir": "<respuesta concreta que debió dar>"
     }}
   ],
+  "evaluacion_dominio": {{
+    "cliente_domino": <true|false, el error más grave: el cliente dominó la conversación o se hizo sentir más fuerte que el vendedor?>,
+    "objecion_mal_resuelta": <true|false, alguna objeción importante quedó mal resuelta o el cliente se quedó con la duda?>,
+    "genero_mas_dudas": <true|false, el closer generó más dudas en vez de aclarar?>,
+    "perdio_control_tema": <true|false, perdió el control del tema cuando el cliente puso objeciones?>,
+    "piloto_automatico": <true|false, respondió en piloto automático sin conectar con lo que el cliente compartió?>,
+    "explico_confuso": <true|false, explicó de forma confusa o demasiado técnica?>,
+    "no_confirmo_compromiso": <true|false, avanzó sin confirmar el compromiso o el monto del cliente?>
+  }},
   "mapa_friccion": [
     {{
       "fragmento": "<cita textual exacta del momento de fricción>",
@@ -147,6 +154,26 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
   "areas_de_mejora": ["<cosa específica que falló, con ejemplo de la llamada>"],
   "consejo_principal": "<el único consejo más importante para la próxima llamada, en lenguaje directo>"
 }}"""
+
+PENALIZACIONES_DOMINIO = {
+    "cliente_domino": 30,
+    "objecion_mal_resuelta": 20,
+    "genero_mas_dudas": 20,
+    "perdio_control_tema": 15,
+    "piloto_automatico": 10,
+    "explico_confuso": 10,
+    "no_confirmo_compromiso": 10,
+}
+
+PUNTAJE_PISO = 15
+
+
+def calcular_puntaje_general(evaluacion_dominio: dict) -> int:
+    puntaje = 100
+    for criterio, penalizacion in PENALIZACIONES_DOMINIO.items():
+        if evaluacion_dominio.get(criterio):
+            puntaje -= penalizacion
+    return max(puntaje, PUNTAJE_PISO)
 
 
 async def analizar_llamada(transcripcion: str) -> dict:
@@ -176,8 +203,19 @@ async def analizar_llamada(transcripcion: str) -> dict:
         raise ValueError("Claude devolvió una respuesta vacía")
 
     try:
-        return json.loads(texto)
+        resultado = json.loads(texto)
     except json.JSONDecodeError as e:
         print(f"JSON PARSE ERROR: {e}")
         print(f"CONTENIDO COMPLETO:\n{texto}")
         raise ValueError(f"La respuesta de Claude no es JSON válido: {e}")
+
+    evaluacion_dominio = resultado.get("evaluacion_dominio")
+    if not evaluacion_dominio or not any(clave in evaluacion_dominio for clave in PENALIZACIONES_DOMINIO):
+        print("EVALUACION_DOMINIO AUSENTE: Claude no devolvió ninguna de las claves esperadas, no se puede calcular puntaje_general")
+        print(f"CONTENIDO COMPLETO:\n{texto}")
+        raise ValueError("Claude no devolvió evaluacion_dominio: no se puede calcular puntaje_general de forma confiable")
+
+    # El puntaje_general se calcula acá, no lo decide Claude. Si Claude igual
+    # incluyó uno en su JSON, esta asignación lo pisa.
+    resultado["puntaje_general"] = calcular_puntaje_general(evaluacion_dominio)
+    return resultado

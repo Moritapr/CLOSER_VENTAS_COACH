@@ -15,6 +15,43 @@ export interface ObjecionResult {
   queDebioDecir: string
 }
 
+export type FriccionTipo = "incomodidad" | "desconfianza" | "desinteres" | "perdida_control"
+
+export interface FriccionMomento {
+  fragmento: string
+  tipo: FriccionTipo
+  explicacion: string
+  queHacer: string
+}
+
+export type NivelEnergia = "alta" | "media" | "baja"
+
+export interface EnergiaCloser {
+  inicio: NivelEnergia
+  medio: NivelEnergia
+  final: NivelEnergia
+  observacion: string
+}
+
+export type NivelTermometro = "interesado" | "neutral" | "frio" | "hostil"
+
+export interface TermometroCliente {
+  inicio: NivelTermometro
+  medio: NivelTermometro
+  final: NivelTermometro
+  observacion: string
+}
+
+export interface EvaluacionDominio {
+  cliente_domino?: boolean
+  objecion_mal_resuelta?: boolean
+  genero_mas_dudas?: boolean
+  perdio_control_tema?: boolean
+  piloto_automatico?: boolean
+  explico_confuso?: boolean
+  no_confirmo_compromiso?: boolean
+}
+
 export interface AnalysisResult {
   score: number
   duration: string
@@ -23,6 +60,10 @@ export interface AnalysisResult {
   pasoAVideollamada?: boolean
   phases: PhaseResult[]
   objeciones?: ObjecionResult[]
+  mapaFriccion?: FriccionMomento[]
+  energiaCloser?: EnergiaCloser
+  termometroCliente?: TermometroCliente
+  evaluacionDominio?: EvaluacionDominio
   strengths: string[]
   weaknesses: string[]
   objections?: { type: string; handled: boolean }[]
@@ -50,6 +91,36 @@ const RESULTADO_STYLES: Record<string, { label: string; color: string; bg: strin
   VIDEOLLAMADA_AGENDADA: { label: "Videollamada agendada", color: "#818cf8", bg: "rgba(99,102,241,0.12)",  border: "rgba(99,102,241,0.3)"  },
   EN_PROCESO:            { label: "En proceso",            color: "#fbbf24", bg: "rgba(251,191,36,0.12)",  border: "rgba(251,191,36,0.3)"  },
   PERDIDA:               { label: "Perdida",               color: "#f87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.3)" },
+}
+
+const DOMINIO_PENALTIES: { key: keyof EvaluacionDominio; label: string; weight: number }[] = [
+  { key: "cliente_domino",          label: "El cliente dominó la conversación",              weight: 30 },
+  { key: "objecion_mal_resuelta",   label: "Una objeción importante quedó mal resuelta",      weight: 20 },
+  { key: "genero_mas_dudas",        label: "Generaste más dudas en vez de aclarar",           weight: 20 },
+  { key: "perdio_control_tema",     label: "Perdiste el control del tema ante las objeciones", weight: 15 },
+  { key: "piloto_automatico",       label: "Respondiste en piloto automático",                weight: 10 },
+  { key: "explico_confuso",         label: "Explicaste de forma confusa o muy técnica",        weight: 10 },
+  { key: "no_confirmo_compromiso",  label: "Avanzaste sin confirmar el compromiso",           weight: 10 },
+]
+
+const FRICCION_TIPO_STYLES: Record<FriccionTipo, { label: string; color: string; bg: string; border: string }> = {
+  incomodidad:     { label: "Incomodidad",        color: "#fbbf24", bg: "rgba(251,191,36,0.12)",  border: "rgba(251,191,36,0.3)"  },
+  desconfianza:    { label: "Desconfianza",       color: "#fb923c", bg: "rgba(251,146,60,0.12)",  border: "rgba(251,146,60,0.3)"  },
+  desinteres:      { label: "Desinterés",         color: "#818cf8", bg: "rgba(99,102,241,0.12)",  border: "rgba(99,102,241,0.3)"  },
+  perdida_control: { label: "Pérdida de control", color: "#f87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.3)" },
+}
+
+const ENERGIA_STYLES: Record<NivelEnergia, { label: string; color: string }> = {
+  alta:  { label: "Alta",  color: "#34d399" },
+  media: { label: "Media", color: "#fbbf24" },
+  baja:  { label: "Baja",  color: "#f87171" },
+}
+
+const TERMOMETRO_STYLES: Record<NivelTermometro, { label: string; color: string }> = {
+  interesado: { label: "Interesado", color: "#34d399" },
+  neutral:    { label: "Neutral",    color: "#fbbf24" },
+  frio:       { label: "Frío",       color: "#818cf8" },
+  hostil:     { label: "Hostil",     color: "#f87171" },
 }
 
 function ResultadoBadge({ resultado }: { resultado: string }) {
@@ -86,7 +157,91 @@ function AnimatedPhaseBar({ passed, delay }: { passed: boolean; delay: number })
   )
 }
 
-function ScoreCard({ score, summary }: { score: number; summary: string }) {
+function EvolutionTrack<T extends string>({
+  levels, styles,
+}: {
+  levels: [T, T, T]
+  styles: Record<T, { label: string; color: string }>
+}) {
+  const stepNames = ["Inicio", "Medio", "Final"]
+  return (
+    <div className="flex items-start">
+      {levels.map((level, i) => {
+        const color = styles[level]?.color ?? "#818cf8"
+        return (
+          <div key={i} className="flex items-start" style={{ flex: i < levels.length - 1 ? 1 : "0 0 auto" }}>
+            <div className="flex flex-col items-center gap-1.5 shrink-0" style={{ width: 68 }}>
+              <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "rgba(237,233,254,0.35)" }}>
+                {stepNames[i]}
+              </span>
+              <div
+                className="h-3.5 w-3.5 rounded-full shrink-0"
+                style={{ background: color, boxShadow: `0 0 10px ${color}99`, border: "2px solid rgba(255,255,255,0.15)" }}
+              />
+              <span className="text-xs font-bold text-center" style={{ color }}>{styles[level]?.label ?? level}</span>
+            </div>
+            {i < levels.length - 1 && (
+              <div
+                className="h-px flex-1 mt-[23px]"
+                style={{ background: `linear-gradient(to right, ${color}, ${styles[levels[i + 1]]?.color ?? "#818cf8"})` }}
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function EvolutionCard<T extends string>({
+  title, levels, styles, observacion,
+}: {
+  title: string
+  levels: [T, T, T]
+  styles: Record<T, { label: string; color: string }>
+  observacion: string
+}) {
+  return (
+    <div className="p-5 space-y-4" style={GLASS}>
+      <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>{title}</p>
+      <div className="gradient-sep" />
+      <EvolutionTrack levels={levels} styles={styles} />
+      <p className="text-xs leading-relaxed" style={{ color: "rgba(237,233,254,0.55)" }}>{observacion}</p>
+    </div>
+  )
+}
+
+function ScoreBreakdown({ evaluacionDominio }: { evaluacionDominio: EvaluacionDominio }) {
+  const applied = DOMINIO_PENALTIES.filter((p) => evaluacionDominio[p.key])
+
+  if (applied.length === 0) {
+    return (
+      <div
+        className="mt-1 mb-4 max-w-sm mx-auto text-xs text-center rounded-lg px-3 py-2"
+        style={{ background: "rgba(52,211,153,0.06)", border: "1px solid rgba(52,211,153,0.18)", color: "#34d399" }}
+      >
+        Sin errores graves detectados
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-1 mb-4 max-w-sm mx-auto text-left space-y-1.5">
+      {applied.map((p) => (
+        <div
+          key={p.key}
+          className="flex items-center justify-between gap-3 text-xs rounded-lg px-3 py-1.5"
+          style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}
+        >
+          <span style={{ color: "rgba(237,233,254,0.65)" }}>{p.label}</span>
+          <span className="font-bold shrink-0" style={{ color: "#f87171" }}>−{p.weight}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ScoreCard({ score, summary, evaluacionDominio }: { score: number; summary: string; evaluacionDominio?: EvaluacionDominio }) {
   const displayed = useCountUp(score, 1300)
   const hue = scoreHue(score)
   const scoreColor = `hsl(${hue}, 85%, 65%)`
@@ -116,7 +271,8 @@ function ScoreCard({ score, summary }: { score: number; summary: string }) {
       >
         {displayed}
       </p>
-      <p className="text-xs mt-1 mb-4" style={{ color: "rgba(237,233,254,0.35)" }}>/ 100</p>
+      <p className="text-xs mt-1 mb-1" style={{ color: "rgba(237,233,254,0.35)" }}>/ 100</p>
+      {evaluacionDominio && <ScoreBreakdown evaluacionDominio={evaluacionDominio} />}
       <div className="gradient-sep" />
       <p className="text-sm mt-4 max-w-sm mx-auto leading-relaxed" style={{ color: "rgba(237,233,254,0.65)" }}>
         {summary}
@@ -164,7 +320,9 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       </Section>
 
       {/* Score */}
-      <Section delay={80}><ScoreCard score={result.score} summary={result.summary} /></Section>
+      <Section delay={80}>
+        <ScoreCard score={result.score} summary={result.summary} evaluacionDominio={result.evaluacionDominio} />
+      </Section>
 
       {/* Phases */}
       <Section delay={180}>
@@ -261,6 +419,66 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                 </div>
               ))}
             </div>
+          </div>
+        </Section>
+      )}
+
+      {/* Mapa de fricción */}
+      {result.mapaFriccion && result.mapaFriccion.length > 0 && (
+        <Section delay={440}>
+          <div className="p-5 space-y-4" style={GLASS}>
+            <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Mapa de fricción</p>
+            <div className="gradient-sep" />
+            <div className="space-y-4">
+              {result.mapaFriccion.map((momento, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <p className="text-xs font-semibold flex-1 min-w-[140px]" style={{ color: "rgba(237,233,254,0.85)" }}>
+                      "{momento.fragmento}"
+                    </p>
+                    <span
+                      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold shrink-0"
+                      style={{
+                        background: FRICCION_TIPO_STYLES[momento.tipo]?.bg,
+                        border: `1px solid ${FRICCION_TIPO_STYLES[momento.tipo]?.border}`,
+                        color: FRICCION_TIPO_STYLES[momento.tipo]?.color,
+                      }}
+                    >
+                      {FRICCION_TIPO_STYLES[momento.tipo]?.label ?? momento.tipo}
+                    </span>
+                  </div>
+                  <p className="text-xs" style={{ color: "rgba(237,233,254,0.55)" }}>{momento.explicacion}</p>
+                  <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                    <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Qué hacer:</p>
+                    <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{momento.queHacer}"</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
+      )}
+
+      {/* Energía del closer + Termómetro del cliente */}
+      {(result.energiaCloser || result.termometroCliente) && (
+        <Section delay={520}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {result.energiaCloser && (
+              <EvolutionCard
+                title="Energía del closer"
+                levels={[result.energiaCloser.inicio, result.energiaCloser.medio, result.energiaCloser.final]}
+                styles={ENERGIA_STYLES}
+                observacion={result.energiaCloser.observacion}
+              />
+            )}
+            {result.termometroCliente && (
+              <EvolutionCard
+                title="Termómetro del cliente"
+                levels={[result.termometroCliente.inicio, result.termometroCliente.medio, result.termometroCliente.final]}
+                styles={TERMOMETRO_STYLES}
+                observacion={result.termometroCliente.observacion}
+              />
+            )}
           </div>
         </Section>
       )}

@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react"
 import { HeroUpload } from "@/components/HeroUpload"
 import { LoadingState } from "@/components/LoadingState"
-import { AnalysisReport, type AnalysisResult } from "@/components/AnalysisReport"
+import {
+  AnalysisReport,
+  type AnalysisResult,
+  type FriccionTipo,
+  type EnergiaCloser,
+  type TermometroCliente,
+  type EvaluacionDominio,
+} from "@/components/AnalysisReport"
 import { LoginScreen } from "@/components/LoginScreen"
 import { Dashboard, type DashboardData } from "@/components/Dashboard"
 import { useAuth } from "@/hooks/useAuth"
@@ -45,12 +52,23 @@ interface BackendObjecion {
   que_debio_decir: string
 }
 
+interface BackendFriccionMomento {
+  fragmento: string
+  tipo: FriccionTipo
+  explicacion: string
+  que_hacer: string
+}
+
 interface BackendAnalysis {
   puntaje_general: number
   resultado?: string
   paso_a_videollamada?: boolean
   fases: Record<typeof FASE_KEYS[number], BackendPhase>
   objeciones_detectadas?: BackendObjecion[]
+  mapa_friccion?: BackendFriccionMomento[]
+  energia_closer?: EnergiaCloser
+  termometro_cliente?: TermometroCliente
+  evaluacion_dominio?: EvaluacionDominio
   fortalezas: string[]
   areas_de_mejora: string[]
   consejo_principal: string
@@ -81,6 +99,15 @@ function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): An
       respuestaDada: o.respuesta_del_closer,
       queDebioDecir: o.que_debio_decir,
     })),
+    mapaFriccion: analysis.mapa_friccion?.map((m) => ({
+      fragmento: m.fragmento,
+      tipo: m.tipo,
+      explicacion: m.explicacion,
+      queHacer: m.que_hacer,
+    })),
+    energiaCloser: analysis.energia_closer,
+    termometroCliente: analysis.termometro_cliente,
+    evaluacionDominio: analysis.evaluacion_dominio,
     strengths: analysis.fortalezas,
     weaknesses: analysis.areas_de_mejora,
   }

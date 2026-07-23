@@ -14,6 +14,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://closer-ventas-coach.vercel.app"],
+    # Previews de Vercel de este proyecto puntual (ej. https://closer-ventas-coach-git-d6b75f-alejomora2403-gmailcoms-projects.vercel.app).
+    # Acotado a este proyecto/team, no un wildcard abierto a *.vercel.app.
+    allow_origin_regex=r"^https://closer-ventas-coach-[a-z0-9-]+-alejomora2403-gmailcoms-projects\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

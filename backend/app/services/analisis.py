@@ -209,7 +209,13 @@ async def analizar_llamada(transcripcion: str) -> dict:
         print(f"CONTENIDO COMPLETO:\n{texto}")
         raise ValueError(f"La respuesta de Claude no es JSON válido: {e}")
 
+    evaluacion_dominio = resultado.get("evaluacion_dominio")
+    if not evaluacion_dominio or not any(clave in evaluacion_dominio for clave in PENALIZACIONES_DOMINIO):
+        print("EVALUACION_DOMINIO AUSENTE: Claude no devolvió ninguna de las claves esperadas, no se puede calcular puntaje_general")
+        print(f"CONTENIDO COMPLETO:\n{texto}")
+        raise ValueError("Claude no devolvió evaluacion_dominio: no se puede calcular puntaje_general de forma confiable")
+
     # El puntaje_general se calcula acá, no lo decide Claude. Si Claude igual
     # incluyó uno en su JSON, esta asignación lo pisa.
-    resultado["puntaje_general"] = calcular_puntaje_general(resultado.get("evaluacion_dominio") or {})
+    resultado["puntaje_general"] = calcular_puntaje_general(evaluacion_dominio)
     return resultado

@@ -18,29 +18,31 @@ REGLAS DE TONO:
   no un consejo genérico. Ejemplo: "Oye [nombre], antes de contarte todo te mando mi licencia por WhatsApp
   para que veas con quién estás hablando, ¿cuál es tu número?".
 
-CRITERIO PARA evaluacion_dominio — MANAGER EXIGENTE, NO AMIGO:
-- El puntaje_general ya NO lo decidís vos: se calcula automáticamente a partir de los booleanos de
-  evaluacion_dominio. Por eso esos booleanos son la base real de la nota — evaluálos con honestidad de manager
-  exigente, no de amigo. No minimices los errores: marcá true si el error ocurrió, aunque haya sido parcial o
-  el closer se haya recuperado después. Un manager exigente no regala una nota alta solo porque se tocaron
-  los pasos del script.
+CRITERIO PARA evaluacion_dominio — MANAGER EXIGENTE, NO AMIGO, PERO PRECISO:
+- El puntaje_general ya NO lo decidís vos: se calcula automáticamente a partir de evaluacion_dominio. Por eso
+  cada criterio tiene que ser preciso, no una impresión general — evaluálos con honestidad de manager exigente,
+  no de amigo, pero siempre respaldado en evidencia concreta. Un manager exigente no regala una nota alta solo
+  porque se tocaron los pasos del script, pero tampoco inventa errores que no puede señalar con una cita.
 - Puntúa el DOMINIO de la llamada, no si se tocaron los pasos del script. Una llamada puede tener las 7 fases
-  realizadas y aun así merecer booleanos en true si el cliente dominó la conversación, si las dudas quedaron
-  mal resueltas, o si el closer perdió el control ante las objeciones.
+  realizadas y aun así merecer criterios en ocurrio=true si el cliente dominó la conversación, si las dudas
+  quedaron mal resueltas, o si el closer perdió el control ante las objeciones — siempre que puedas citar el
+  momento exacto.
 - cliente_domino es el error más grave de todos: el cliente se hizo sentir más fuerte que el vendedor, llevó
   el ritmo de la conversación, o el closer quedó a la defensiva. Si pasó, aunque sea en un momento puntual de
-  la llamada, marcalo true.
-- Ante la duda de si un error ocurrió "lo suficiente" para contar, marcalo true. Un error parcial sigue siendo
-  un error — preferí una nota dura y justa a una inflada.
+  la llamada, marcalo con ocurrio=true y citá ese momento en evidencia.
+- Marcá ocurrio=true SOLO si podés citar en evidencia un fragmento textual concreto y significativo de la
+  transcripción que lo demuestre. No marques un criterio como ocurrido "por si acaso" o por impresión general
+  — necesitás poder señalar el momento exacto. Sin cita concreta, es false. El objetivo es precisión, no dureza
+  por defecto: un error leve o dudoso que no puedas evidenciar con una cita va false.
 - Evaluá evaluacion_dominio AL FINAL, después de haber escrito fases, objeciones_detectadas, mapa_friccion,
   fortalezas y areas_de_mejora. Releé lo que vos mismo ya escribiste en esas secciones antes de marcar cada
-  booleano — no lo evalúes en el vacío, evalúalo contra tu propio análisis.
+  criterio — no lo evalúes en el vacío, evalúalo contra tu propio análisis.
 - Coherencia interna obligatoria, sin excepciones: si mapa_friccion tiene un momento de tipo "perdida_control",
-  perdio_control_tema DEBE ser true. Si mapa_friccion tiene un momento donde el cliente impone condiciones o
-  el closer cede sin resistencia, cliente_domino DEBE ser true. Si areas_de_mejora menciona que una objeción
-  quedó sin resolver, objecion_mal_resuelta DEBE ser true. No puede haber una fortaleza que contradiga un
-  booleano en true, ni un booleano en false que contradiga un problema que vos mismo describiste en otra
-  parte del análisis.
+  perdio_control_tema.ocurrio DEBE ser true (usá ese mismo fragmento como evidencia). Si mapa_friccion tiene un
+  momento donde el cliente impone condiciones o el closer cede sin resistencia, cliente_domino.ocurrio DEBE ser
+  true. Si areas_de_mejora menciona que una objeción quedó sin resolver, objecion_mal_resuelta.ocurrio DEBE ser
+  true. No puede haber una fortaleza que contradiga un criterio en ocurrio=true, ni un criterio en ocurrio=false
+  que contradiga un problema que vos mismo describiste en otra parte del análisis.
 - El mismo estándar exigente aplica a los puntajes de cada fase individual (1-10): nunca pongas un 8 o 9 en
   una fase cuyo feedback describe un problema serio.
 - No penalices ni menciones como área de mejora que el closer no haya pedido el número de seguro social durante
@@ -62,8 +64,9 @@ TRANSCRIPCIÓN:
 {transcripcion}
 
 CRITERIOS OBSERVABLES PARA evaluacion_dominio — se evalúa AL FINAL, después de escribir el resto del análisis.
-Cada criterio tiene señales concretas: si CUALQUIERA aparece en la llamada, ese booleano es true. No es un
-juicio abstracto, son señales que tenés que poder señalar en el texto:
+Cada criterio tiene señales concretas que indican qué tipo de momento cuenta. Pero tener una señal no alcanza:
+para marcar ocurrio=true tenés que poder citar en evidencia el fragmento textual exacto de la transcripción
+que lo demuestra. Si no podés citarlo, es false, sin importar la impresión general que te haya dejado la llamada:
 
 - cliente_domino: el cliente marca el precio/monto y el closer acepta sin contrastar · el cliente cambia de
   tema y el closer lo sigue sin retomar · el cliente hace más preguntas que el closer · el closer cede ante
@@ -90,7 +93,8 @@ juicio abstracto, son señales que tenés que poder señalar en el texto:
 
 El puntaje_general de esta llamada NO lo calculás vos: se calcula por código a partir de evaluacion_dominio.
 Por eso evaluacion_dominio tiene que ser honesto y consistente con el resto de tu análisis — es la base real
-de la nota, no un campo de relleno.
+de la nota, no un campo de relleno. Cada criterio con ocurrio=true necesita su evidencia citada; no dejes
+evidencia en null si ocurrio es true, y no inventes una cita si ocurrio es false.
 
 Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni después:
 
@@ -179,13 +183,34 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
   "areas_de_mejora": ["<cosa específica que falló, con ejemplo de la llamada>"],
   "consejo_principal": "<el único consejo más importante para la próxima llamada, en lenguaje directo>",
   "evaluacion_dominio": {{
-    "cliente_domino": <true|false — releé mapa_friccion y areas_de_mejora antes de responder, ver criterios observables arriba>,
-    "objecion_mal_resuelta": <true|false, ver criterios observables arriba>,
-    "genero_mas_dudas": <true|false, ver criterios observables arriba>,
-    "perdio_control_tema": <true|false, ver criterios observables arriba>,
-    "piloto_automatico": <true|false, ver criterios observables arriba>,
-    "explico_confuso": <true|false, ver criterios observables arriba>,
-    "no_confirmo_compromiso": <true|false, ver criterios observables arriba>
+    "cliente_domino": {{
+      "ocurrio": <true|false — releé mapa_friccion y areas_de_mejora antes de responder, ver criterios observables arriba>,
+      "evidencia": "<cita textual exacta que lo demuestra, o null si ocurrio es false>"
+    }},
+    "objecion_mal_resuelta": {{
+      "ocurrio": <true|false, ver criterios observables arriba>,
+      "evidencia": "<cita textual exacta, o null>"
+    }},
+    "genero_mas_dudas": {{
+      "ocurrio": <true|false, ver criterios observables arriba>,
+      "evidencia": "<cita textual exacta, o null>"
+    }},
+    "perdio_control_tema": {{
+      "ocurrio": <true|false, ver criterios observables arriba>,
+      "evidencia": "<cita textual exacta, o null>"
+    }},
+    "piloto_automatico": {{
+      "ocurrio": <true|false, ver criterios observables arriba>,
+      "evidencia": "<cita textual exacta, o null>"
+    }},
+    "explico_confuso": {{
+      "ocurrio": <true|false, ver criterios observables arriba>,
+      "evidencia": "<cita textual exacta, o null>"
+    }},
+    "no_confirmo_compromiso": {{
+      "ocurrio": <true|false, ver criterios observables arriba>,
+      "evidencia": "<cita textual exacta, o null>"
+    }}
   }}
 }}"""
 
@@ -202,10 +227,21 @@ PENALIZACIONES_DOMINIO = {
 PUNTAJE_PISO = 15
 
 
+def _criterio_ocurrio(valor) -> bool:
+    # Formato nuevo: {"ocurrio": bool, "evidencia": str|null}. Formato viejo
+    # (análisis previos a este cambio): booleano suelto. Cualquier otra cosa
+    # (falta la clave, None, etc.) se trata como que no ocurrió.
+    if isinstance(valor, dict):
+        return bool(valor.get("ocurrio"))
+    if isinstance(valor, bool):
+        return valor
+    return False
+
+
 def calcular_puntaje_general(evaluacion_dominio: dict) -> int:
     puntaje = 100
     for criterio, penalizacion in PENALIZACIONES_DOMINIO.items():
-        if evaluacion_dominio.get(criterio):
+        if _criterio_ocurrio(evaluacion_dominio.get(criterio)):
             puntaje -= penalizacion
     return max(puntaje, PUNTAJE_PISO)
 

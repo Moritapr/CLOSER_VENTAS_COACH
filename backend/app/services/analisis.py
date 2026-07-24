@@ -30,10 +30,17 @@ CRITERIO PARA evaluacion_dominio — MANAGER EXIGENTE, NO AMIGO:
 - cliente_domino es el error más grave de todos: el cliente se hizo sentir más fuerte que el vendedor, llevó
   el ritmo de la conversación, o el closer quedó a la defensiva. Si pasó, aunque sea en un momento puntual de
   la llamada, marcalo true.
-- Coherencia obligatoria entre booleanos y texto: evaluacion_dominio tiene que reflejar lo que vos mismo
-  escribís en el feedback de las fases, en mapa_friccion y en areas_de_mejora. Si en el texto describís que
-  el cliente llevó el ritmo, que una objeción quedó mal resuelta, o que el closer perdió el control, el
-  booleano correspondiente tiene que ser true — no puede haber contradicción entre lo que contás y lo que marcás.
+- Ante la duda de si un error ocurrió "lo suficiente" para contar, marcalo true. Un error parcial sigue siendo
+  un error — preferí una nota dura y justa a una inflada.
+- Evaluá evaluacion_dominio AL FINAL, después de haber escrito fases, objeciones_detectadas, mapa_friccion,
+  fortalezas y areas_de_mejora. Releé lo que vos mismo ya escribiste en esas secciones antes de marcar cada
+  booleano — no lo evalúes en el vacío, evalúalo contra tu propio análisis.
+- Coherencia interna obligatoria, sin excepciones: si mapa_friccion tiene un momento de tipo "perdida_control",
+  perdio_control_tema DEBE ser true. Si mapa_friccion tiene un momento donde el cliente impone condiciones o
+  el closer cede sin resistencia, cliente_domino DEBE ser true. Si areas_de_mejora menciona que una objeción
+  quedó sin resolver, objecion_mal_resuelta DEBE ser true. No puede haber una fortaleza que contradiga un
+  booleano en true, ni un booleano en false que contradiga un problema que vos mismo describiste en otra
+  parte del análisis.
 - El mismo estándar exigente aplica a los puntajes de cada fase individual (1-10): nunca pongas un 8 o 9 en
   una fase cuyo feedback describe un problema serio.
 - No penalices ni menciones como área de mejora que el closer no haya pedido el número de seguro social durante
@@ -53,6 +60,33 @@ PROMPT_ANALISIS = """Escuchaste esta llamada de ventas IUL. Analiza cada fase y 
 
 TRANSCRIPCIÓN:
 {transcripcion}
+
+CRITERIOS OBSERVABLES PARA evaluacion_dominio — se evalúa AL FINAL, después de escribir el resto del análisis.
+Cada criterio tiene señales concretas: si CUALQUIERA aparece en la llamada, ese booleano es true. No es un
+juicio abstracto, son señales que tenés que poder señalar en el texto:
+
+- cliente_domino: el cliente marca el precio/monto y el closer acepta sin contrastar · el cliente cambia de
+  tema y el closer lo sigue sin retomar · el cliente hace más preguntas que el closer · el closer cede ante
+  una petición sin dar alternativa.
+- objecion_mal_resuelta: el closer no responde la objeción puntual y cambia de tema o da una respuesta
+  genérica · el cliente repite la misma duda u objeción más de una vez · el cliente nunca dice explícitamente
+  que quedó conforme con la respuesta.
+- genero_mas_dudas: el cliente pregunta de nuevo justo después de una explicación, señal de que no entendió
+  · el closer da información contradictoria entre un momento y otro de la llamada · el cliente dice frases
+  como "no entendí" o "estoy confundido".
+- perdio_control_tema: ante una objeción, el closer cambia de tema en vez de resolverla · el closer se queda
+  callado o da una respuesta evasiva ante una objeción · la conversación se desvía del guion y el closer no
+  la retoma.
+- piloto_automatico: el closer repite frases del script sin conectar con algo específico que el cliente acaba
+  de decir · el closer ignora una respuesta emocional o personal del cliente y sigue con el siguiente paso
+  como si no la hubiera escuchado · el closer no hace ninguna pregunta de seguimiento genuina sobre lo que el
+  cliente contó.
+- explico_confuso: el cliente pide que le repitan o expliquen de nuevo algo ya explicado · el closer usa
+  jerga técnica o financiera sin explicarla en simple · la explicación es larga o enredada y no llega a un
+  punto que el cliente pueda repetir con sus palabras.
+- no_confirmo_compromiso: el closer avanza de fase sin que el cliente haya dicho un monto o un "sí" claro ·
+  el cliente da una respuesta ambigua ("tal vez", "lo pienso") y el closer la trata como compromiso firme ·
+  el closer no repite ni confirma en voz alta el monto o compromiso antes de cerrar ese tema.
 
 El puntaje_general de esta llamada NO lo calculás vos: se calcula por código a partir de evaluacion_dominio.
 Por eso evaluacion_dominio tiene que ser honesto y consistente con el resto de tu análisis — es la base real
@@ -121,15 +155,6 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
       "que_debio_decir": "<respuesta concreta que debió dar>"
     }}
   ],
-  "evaluacion_dominio": {{
-    "cliente_domino": <true|false, el error más grave: el cliente dominó la conversación o se hizo sentir más fuerte que el vendedor?>,
-    "objecion_mal_resuelta": <true|false, alguna objeción importante quedó mal resuelta o el cliente se quedó con la duda?>,
-    "genero_mas_dudas": <true|false, el closer generó más dudas en vez de aclarar?>,
-    "perdio_control_tema": <true|false, perdió el control del tema cuando el cliente puso objeciones?>,
-    "piloto_automatico": <true|false, respondió en piloto automático sin conectar con lo que el cliente compartió?>,
-    "explico_confuso": <true|false, explicó de forma confusa o demasiado técnica?>,
-    "no_confirmo_compromiso": <true|false, avanzó sin confirmar el compromiso o el monto del cliente?>
-  }},
   "mapa_friccion": [
     {{
       "fragmento": "<cita textual exacta del momento de fricción>",
@@ -152,7 +177,16 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
   }},
   "fortalezas": ["<cosa específica que hizo bien>"],
   "areas_de_mejora": ["<cosa específica que falló, con ejemplo de la llamada>"],
-  "consejo_principal": "<el único consejo más importante para la próxima llamada, en lenguaje directo>"
+  "consejo_principal": "<el único consejo más importante para la próxima llamada, en lenguaje directo>",
+  "evaluacion_dominio": {{
+    "cliente_domino": <true|false — releé mapa_friccion y areas_de_mejora antes de responder, ver criterios observables arriba>,
+    "objecion_mal_resuelta": <true|false, ver criterios observables arriba>,
+    "genero_mas_dudas": <true|false, ver criterios observables arriba>,
+    "perdio_control_tema": <true|false, ver criterios observables arriba>,
+    "piloto_automatico": <true|false, ver criterios observables arriba>,
+    "explico_confuso": <true|false, ver criterios observables arriba>,
+    "no_confirmo_compromiso": <true|false, ver criterios observables arriba>
+  }}
 }}"""
 
 PENALIZACIONES_DOMINIO = {

@@ -43,6 +43,14 @@ CRITERIO PARA evaluacion_dominio — MANAGER EXIGENTE, NO AMIGO, PERO PRECISO:
   true. Si areas_de_mejora menciona que una objeción quedó sin resolver, objecion_mal_resuelta.ocurrio DEBE ser
   true. No puede haber una fortaleza que contradiga un criterio en ocurrio=true, ni un criterio en ocurrio=false
   que contradiga un problema que vos mismo describiste en otra parte del análisis.
+- objecion_mal_resuelta.ocurrio DEBE ser true en cualquiera de estos casos: (a) mapa_friccion tiene un momento
+  de tipo "desconfianza" donde el cliente no quedó convencido, o donde describís la respuesta del closer como
+  genérica, superficial, técnica sin validar, o insuficiente; (b) en areas_de_mejora u objeciones_detectadas
+  describís la respuesta del closer como "genérica", "corta para el peso de la duda", "no resolvió el
+  mecanismo", "sonó a defensa", o equivalente. Una objeción está bien resuelta SOLO si el cliente quedó
+  visiblemente conforme — deja de preguntar sobre el tema, lo confirma, o avanza sin volver a mencionarlo. Si
+  el cliente repite la duda, cambia de tema sin cerrarla, o vos mismo describís tu respuesta como incompleta,
+  está mal resuelta.
 - Prohibido marcar explico_confuso.ocurrio=true si en fortalezas afirmás que explicó con claridad o precisión.
   Prohibido marcar no_confirmo_compromiso.ocurrio=true si el cliente aceptó avanzar (agendó videollamada,
   confirmó el monto, dijo que sí). Antes de marcar cualquier criterio en true, releé fortalezas — si alguna

@@ -6,6 +6,7 @@ import {
   type AnalysisResult,
   type FriccionTipo,
   type EnergiaCloser,
+  type AsertividadCloser,
   type TermometroCliente,
   type EvaluacionDominio,
 } from "@/components/AnalysisReport"
@@ -67,6 +68,7 @@ interface BackendAnalysis {
   objeciones_detectadas?: BackendObjecion[]
   mapa_friccion?: BackendFriccionMomento[]
   energia_closer?: EnergiaCloser
+  asertividad_closer?: AsertividadCloser
   termometro_cliente?: TermometroCliente
   evaluacion_dominio?: EvaluacionDominio
   fortalezas: string[]
@@ -106,6 +108,7 @@ function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): An
       queHacer: m.que_hacer,
     })),
     energiaCloser: analysis.energia_closer,
+    asertividadCloser: analysis.asertividad_closer,
     termometroCliente: analysis.termometro_cliente,
     evaluacionDominio: analysis.evaluacion_dominio,
     strengths: analysis.fortalezas,

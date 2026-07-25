@@ -33,6 +33,12 @@ export interface EnergiaCloser {
   observacion: string
 }
 
+// Mismo shape que EnergiaCloser — energia_closer medía tono de voz (no
+// observable en texto) y se reemplazó por asertividad_closer, que mide
+// comportamiento verbal concreto. Se mantiene EnergiaCloser para los
+// análisis viejos que todavía la traen.
+export type AsertividadCloser = EnergiaCloser
+
 export type NivelTermometro = "interesado" | "neutral" | "frio" | "hostil"
 
 export interface TermometroCliente {
@@ -42,14 +48,34 @@ export interface TermometroCliente {
   observacion: string
 }
 
+// Formato nuevo del backend: cada criterio es un objeto con evidencia citada.
+export interface CriterioDominio {
+  ocurrio: boolean
+  evidencia?: string | null
+}
+
+// Formato viejo (análisis previos a que el backend exigiera evidencia):
+// booleano suelto. Se acepta cualquiera de los dos por criterio.
+type ValorCriterioDominio = boolean | CriterioDominio
+
 export interface EvaluacionDominio {
-  cliente_domino?: boolean
-  objecion_mal_resuelta?: boolean
-  genero_mas_dudas?: boolean
-  perdio_control_tema?: boolean
-  piloto_automatico?: boolean
-  explico_confuso?: boolean
-  no_confirmo_compromiso?: boolean
+  cliente_domino?: ValorCriterioDominio
+  objecion_mal_resuelta?: ValorCriterioDominio
+  genero_mas_dudas?: ValorCriterioDominio
+  perdio_control_tema?: ValorCriterioDominio
+  piloto_automatico?: ValorCriterioDominio
+  explico_confuso?: ValorCriterioDominio
+  no_confirmo_compromiso?: ValorCriterioDominio
+}
+
+function criterioOcurrio(valor: ValorCriterioDominio | undefined): boolean {
+  if (typeof valor === "boolean") return valor
+  if (valor && typeof valor === "object") return Boolean(valor.ocurrio)
+  return false
+}
+
+function hasText(value: string | null | undefined): value is string {
+  return typeof value === "string" && value.trim().length > 0
 }
 
 export interface AnalysisResult {
@@ -62,6 +88,7 @@ export interface AnalysisResult {
   objeciones?: ObjecionResult[]
   mapaFriccion?: FriccionMomento[]
   energiaCloser?: EnergiaCloser
+  asertividadCloser?: AsertividadCloser
   termometroCliente?: TermometroCliente
   evaluacionDominio?: EvaluacionDominio
   strengths: string[]
@@ -98,9 +125,9 @@ const DOMINIO_PENALTIES: { key: keyof EvaluacionDominio; label: string; weight: 
   { key: "objecion_mal_resuelta",   label: "Una objeción importante quedó mal resuelta",      weight: 20 },
   { key: "genero_mas_dudas",        label: "Generaste más dudas en vez de aclarar",           weight: 20 },
   { key: "perdio_control_tema",     label: "Perdiste el control del tema ante las objeciones", weight: 15 },
-  { key: "piloto_automatico",       label: "Respondiste en piloto automático",                weight: 10 },
-  { key: "explico_confuso",         label: "Explicaste de forma confusa o muy técnica",        weight: 10 },
-  { key: "no_confirmo_compromiso",  label: "Avanzaste sin confirmar el compromiso",           weight: 10 },
+  { key: "piloto_automatico",       label: "Respondiste en piloto automático",                weight: 5 },
+  { key: "explico_confuso",         label: "Explicaste de forma confusa o muy técnica",        weight: 5 },
+  { key: "no_confirmo_compromiso",  label: "Avanzaste sin confirmar el compromiso",           weight: 5 },
 ]
 
 const FRICCION_TIPO_STYLES: Record<FriccionTipo, { label: string; color: string; bg: string; border: string }> = {
@@ -212,7 +239,7 @@ function EvolutionCard<T extends string>({
 }
 
 function ScoreBreakdown({ evaluacionDominio }: { evaluacionDominio: EvaluacionDominio }) {
-  const applied = DOMINIO_PENALTIES.filter((p) => evaluacionDominio[p.key])
+  const applied = DOMINIO_PENALTIES.filter((p) => criterioOcurrio(evaluacionDominio[p.key]))
 
   if (applied.length === 0) {
     return (
@@ -348,7 +375,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                     <AnimatedPhaseBar passed={phase.passed} delay={250 + i * 80} />
                   </div>
                   <p className="text-xs" style={{ color: "rgba(237,233,254,0.42)" }}>{phase.feedback}</p>
-                  {phase.queDebioDecir && (
+                  {hasText(phase.queDebioDecir) && (
                     <div className="mt-1.5 rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
                       <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
                       <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{phase.queDebioDecir}"</p>
@@ -411,10 +438,12 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                       <p className="text-xs font-medium" style={{ color: "rgba(237,233,254,0.45)" }}>Lo que dijiste:</p>
                       <p className="text-xs" style={{ color: "rgba(237,233,254,0.65)" }}>{obj.respuestaDada}</p>
                     </div>
-                    <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
-                      <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
-                      <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{obj.queDebioDecir}"</p>
-                    </div>
+                    {hasText(obj.queDebioDecir) && (
+                      <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                        <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
+                        <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{obj.queDebioDecir}"</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -448,10 +477,12 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                     </span>
                   </div>
                   <p className="text-xs" style={{ color: "rgba(237,233,254,0.55)" }}>{momento.explicacion}</p>
-                  <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
-                    <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Qué hacer:</p>
-                    <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{momento.queHacer}"</p>
-                  </div>
+                  {hasText(momento.queHacer) && (
+                    <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                      <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Qué hacer:</p>
+                      <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{momento.queHacer}"</p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -459,29 +490,42 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
         </Section>
       )}
 
-      {/* Energía del closer + Termómetro del cliente */}
-      {(result.energiaCloser || result.termometroCliente) && (
-        <Section delay={520}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {result.energiaCloser && (
-              <EvolutionCard
-                title="Energía del closer"
-                levels={[result.energiaCloser.inicio, result.energiaCloser.medio, result.energiaCloser.final]}
-                styles={ENERGIA_STYLES}
-                observacion={result.energiaCloser.observacion}
-              />
-            )}
-            {result.termometroCliente && (
-              <EvolutionCard
-                title="Termómetro del cliente"
-                levels={[result.termometroCliente.inicio, result.termometroCliente.medio, result.termometroCliente.final]}
-                styles={TERMOMETRO_STYLES}
-                observacion={result.termometroCliente.observacion}
-              />
-            )}
-          </div>
-        </Section>
-      )}
+      {/* Asertividad del closer (o Energía, en análisis viejos) + Termómetro del cliente */}
+      {(() => {
+        // asertividad_closer reemplazó a energia_closer (que medía tono de voz,
+        // no observable en una transcripción). Análisis viejos solo traen
+        // energia_closer — se siguen mostrando, con su título original.
+        const closerEvolucion = result.asertividadCloser
+          ? { title: "Asertividad del closer", data: result.asertividadCloser }
+          : result.energiaCloser
+          ? { title: "Energía del closer", data: result.energiaCloser }
+          : null
+
+        if (!closerEvolucion && !result.termometroCliente) return null
+
+        return (
+          <Section delay={520}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {closerEvolucion && (
+                <EvolutionCard
+                  title={closerEvolucion.title}
+                  levels={[closerEvolucion.data.inicio, closerEvolucion.data.medio, closerEvolucion.data.final]}
+                  styles={ENERGIA_STYLES}
+                  observacion={closerEvolucion.data.observacion}
+                />
+              )}
+              {result.termometroCliente && (
+                <EvolutionCard
+                  title="Termómetro del cliente"
+                  levels={[result.termometroCliente.inicio, result.termometroCliente.medio, result.termometroCliente.final]}
+                  styles={TERMOMETRO_STYLES}
+                  observacion={result.termometroCliente.observacion}
+                />
+              )}
+            </div>
+          </Section>
+        )
+      })()}
 
     </div>
   )

@@ -43,19 +43,36 @@ CRITERIO PARA evaluacion_dominio — MANAGER EXIGENTE, NO AMIGO, PERO PRECISO:
   true. Si areas_de_mejora menciona que una objeción quedó sin resolver, objecion_mal_resuelta.ocurrio DEBE ser
   true. No puede haber una fortaleza que contradiga un criterio en ocurrio=true, ni un criterio en ocurrio=false
   que contradiga un problema que vos mismo describiste en otra parte del análisis.
+- Prohibido marcar explico_confuso.ocurrio=true si en fortalezas afirmás que explicó con claridad o precisión.
+  Prohibido marcar no_confirmo_compromiso.ocurrio=true si el cliente aceptó avanzar (agendó videollamada,
+  confirmó el monto, dijo que sí). Antes de marcar cualquier criterio en true, releé fortalezas — si alguna
+  fortaleza contradice ese criterio, el criterio va false. Una fortaleza y una penalización no pueden describir
+  el mismo comportamiento en direcciones opuestas.
+- Los criterios menores (piloto_automatico, explico_confuso, no_confirmo_compromiso) solo se marcan si el error
+  es claro y significativo, no por un detalle menor.
 - El mismo estándar exigente aplica a los puntajes de cada fase individual (1-10): nunca pongas un 8 o 9 en
   una fase cuyo feedback describe un problema serio.
 - No penalices ni menciones como área de mejora que el closer no haya pedido el número de seguro social durante
   la llamada. El SSN se pide después, al llenar la aplicación — no es parte de esta llamada bajo ningún concepto.
 
-REGLAS PARA FRICCIÓN, ENERGÍA Y TERMÓMETRO:
-- Para mapa_friccion, energia_closer y termometro_cliente básate solo en lo que está en el texto: palabras
+REGLAS PARA FRICCIÓN, ASERTIVIDAD Y TERMÓMETRO:
+- Para mapa_friccion, asertividad_closer y termometro_cliente básate solo en lo que está en el texto: palabras
   exactas, respuestas cortas, evasivas, repeticiones, cambios de tema. No inventes tono de voz, silencios
   ni lenguaje corporal que no puedas leer en la transcripción.
 - mapa_friccion no es una lista de errores genéricos: cada entrada es un momento puntual y real de la llamada
   (con su fragmento exacto) donde el cliente se incomodó, desconfió, se desinteresó o el closer perdió el
   control de la conversación — y qué debió hacer el closer justo ahí.
-- energia_closer y termometro_cliente describen una evolución real a lo largo de la llamada, no relleno:
+- asertividad_closer mide comportamiento verbal concreto, NO tono de voz, volumen ni energía vocal — eso no es
+  observable en una transcripción. Evaluá solo lo que podés citar:
+  · Alta: el closer redirige la conversación cuando se desvía, defiende el valor antes de ceder, hace preguntas
+    de cierre, retoma el hilo tras una interrupción.
+  · Media: responde bien pero no redirige, cede tras algo de resistencia, deja que el cliente marque parte del
+    ritmo.
+  · Baja: sigue al cliente sin retomar, cede sin resistencia, no hace preguntas de cierre, reacciona en vez de
+    liderar.
+- termometro_cliente se basa en señales observables del texto: el largo de las respuestas del cliente, cuántas
+  preguntas hace, qué objeciones pone, si acepta o resiste avanzar. No infieras tono de voz.
+- asertividad_closer y termometro_cliente describen una evolución real a lo largo de la llamada, no relleno:
   si algo no cambió de inicio a fin, dilo así de simple en la observación."""
 
 PROMPT_ANALISIS = """Escuchaste esta llamada de ventas IUL. Analiza cada fase y responde SOLO en JSON.
@@ -167,11 +184,11 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
       "que_hacer": "<qué debió hacer el closer justo en ese momento>"
     }}
   ],
-  "energia_closer": {{
+  "asertividad_closer": {{
     "inicio": "<alta | media | baja>",
     "medio": "<alta | media | baja>",
     "final": "<alta | media | baja>",
-    "observacion": "<cómo evolucionó la energía del closer durante la llamada>"
+    "observacion": "<cómo evolucionó la asertividad del closer durante la llamada>"
   }},
   "termometro_cliente": {{
     "inicio": "<interesado | neutral | frio | hostil>",
@@ -215,13 +232,16 @@ Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni desp
 }}"""
 
 PENALIZACIONES_DOMINIO = {
+    # Graves — validados con un manager real, sin cambios.
     "cliente_domino": 30,
     "objecion_mal_resuelta": 20,
     "genero_mas_dudas": 20,
     "perdio_control_tema": 15,
-    "piloto_automatico": 10,
-    "explico_confuso": 10,
-    "no_confirmo_compromiso": 10,
+    # Menores — bajados de 10 a 5: con 7 criterios sumando 115, marcar 5-6
+    # saturaba el piso siempre, sin importar cuáles se marcaran.
+    "piloto_automatico": 5,
+    "explico_confuso": 5,
+    "no_confirmo_compromiso": 5,
 }
 
 PUNTAJE_PISO = 15

@@ -39,7 +39,7 @@ const GLASS = {
   background: "rgba(255, 255, 255, 0.03)",
   backdropFilter: "blur(24px)",
   WebkitBackdropFilter: "blur(24px)",
-  border: "1px solid rgba(139, 92, 246, 0.18)",
+  border: "1px solid rgba(217, 119, 6, 0.18)",
   borderRadius: 16,
 } as const
 
@@ -53,21 +53,21 @@ function PatronesRepetidos({ patrones }: { patrones: PatronesData }) {
   return (
     <div
       className="p-5 space-y-4"
-      style={{ ...GLASS, boxShadow: "0 0 25px rgba(139,92,246,0.18), 0 0 50px rgba(139,92,246,0.07)" }}
+      style={{ ...GLASS, boxShadow: "0 0 25px rgba(217,119,6,0.18), 0 0 50px rgba(217,119,6,0.07)" }}
     >
-      <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Tu patrón repetido</p>
+      <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Tu patrón repetido</p>
       <div className="gradient-sep" />
       {patrones.patrones.length === 0 ? (
-        <p className="text-sm text-center py-2" style={{ color: "rgba(237,233,254,0.35)" }}>
+        <p className="text-sm text-center py-2" style={{ color: "rgba(245,237,224,0.35)" }}>
           Necesitas más llamadas analizadas para detectar patrones.
         </p>
       ) : (
         <ul className="space-y-2.5">
           {patrones.patrones.map((p) => (
-            <li key={p.criterio} className="text-sm flex items-start gap-2" style={{ color: "rgba(237,233,254,0.75)" }}>
+            <li key={p.criterio} className="text-sm flex items-start gap-2" style={{ color: "rgba(245,237,224,0.75)" }}>
               <span className="shrink-0 mt-0.5 font-bold" style={{ color: "#fbbf24" }}>!</span>
               <span>
-                <strong style={{ color: "#ede9fe" }}>{labelCriterio(p.criterio)}</strong> apareció en{" "}
+                <strong style={{ color: "#f5ede0" }}>{labelCriterio(p.criterio)}</strong> apareció en{" "}
                 {p.veces} de tus últimas {p.de} llamadas ({p.porcentaje}%).
               </span>
             </li>
@@ -127,7 +127,7 @@ function WeeklyChart({ data }: { data: { label: string; score: number }[] }) {
                 }}
               />
             </div>
-            <span className="text-xs" style={{ color: "rgba(237,233,254,0.38)" }}>{label}</span>
+            <span className="text-xs" style={{ color: "rgba(245,237,224,0.38)" }}>{label}</span>
           </div>
         )
       })}
@@ -163,25 +163,25 @@ export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
             className="p-4 space-y-1 transition-all duration-200 cursor-default"
             style={{
               ...GLASS,
-              boxShadow: glow ? "0 0 25px rgba(139,92,246,0.18), 0 0 50px rgba(139,92,246,0.07)" : undefined,
+              boxShadow: glow ? "0 0 25px rgba(217,119,6,0.18), 0 0 50px rgba(217,119,6,0.07)" : undefined,
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"
-              ;(e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 35px rgba(139,92,246,0.32), 0 0 70px rgba(139,92,246,0.14)"
-              ;(e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.38)"
+              ;(e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 35px rgba(217,119,6,0.32), 0 0 70px rgba(217,119,6,0.14)"
+              ;(e.currentTarget as HTMLDivElement).style.borderColor = "rgba(217,119,6,0.38)"
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLDivElement).style.transform = ""
-              ;(e.currentTarget as HTMLDivElement).style.boxShadow = glow ? "0 0 25px rgba(139,92,246,0.18), 0 0 50px rgba(139,92,246,0.07)" : ""
-              ;(e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.18)"
+              ;(e.currentTarget as HTMLDivElement).style.boxShadow = glow ? "0 0 25px rgba(217,119,6,0.18), 0 0 50px rgba(217,119,6,0.07)" : ""
+              ;(e.currentTarget as HTMLDivElement).style.borderColor = "rgba(217,119,6,0.18)"
             }}
           >
-            <p className="text-xs" style={{ color: "rgba(237,233,254,0.42)" }}>{label}</p>
+            <p className="text-xs" style={{ color: "rgba(245,237,224,0.42)" }}>{label}</p>
             <p
               className={`font-black ${small ? "text-base leading-tight" : "text-3xl"}`}
               style={{
-                color: glow ? "#c4b5fd" : "#ede9fe",
-                textShadow: glow ? "0 0 20px rgba(167,139,250,0.5)" : undefined,
+                color: glow ? "#fcd34d" : "#f5ede0",
+                textShadow: glow ? "0 0 20px rgba(251,191,36,0.5)" : undefined,
               }}
             >
               {value}
@@ -192,7 +192,7 @@ export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
 
       {/* Weekly chart */}
       <div className="p-5 space-y-3" style={GLASS}>
-        <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Progreso semanal</p>
+        <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Progreso semanal</p>
         <div className="gradient-sep" />
         <WeeklyChart data={data.weeklyScores} />
       </div>
@@ -200,7 +200,7 @@ export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
       {/* Phase fails + Objections */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-5 space-y-4" style={GLASS}>
-          <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Fases donde más fallás</p>
+          <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Fases donde más fallás</p>
           <div className="gradient-sep" />
           <div className="space-y-4">
             {data.phaseFails.map((p) => {
@@ -208,7 +208,7 @@ export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
               return (
                 <div key={p.name} className="space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span style={{ color: "rgba(237,233,254,0.55)" }}>{p.name}</span>
+                    <span style={{ color: "rgba(245,237,224,0.55)" }}>{p.name}</span>
                     <span className="font-bold" style={{ color: "#f87171" }}>{p.failCount}/{p.total}</span>
                   </div>
                   <div style={{ height: 4, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
@@ -226,16 +226,16 @@ export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
         </div>
 
         <div className="p-5 space-y-4" style={GLASS}>
-          <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Objeciones frecuentes</p>
+          <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Objeciones frecuentes</p>
           <div className="gradient-sep" />
           <div className="space-y-3">
             {data.topObjections.map((obj) => (
               <div key={obj.type} className="flex items-center justify-between gap-2">
-                <span className="text-sm truncate" style={{ color: "rgba(237,233,254,0.55)" }}>{obj.type}</span>
+                <span className="text-sm truncate" style={{ color: "rgba(245,237,224,0.55)" }}>{obj.type}</span>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="text-xs font-semibold" style={{ color: "#34d399" }}>{obj.handledCount}✓</span>
-                  <span className="text-xs" style={{ color: "rgba(237,233,254,0.25)" }}>/</span>
-                  <span className="text-xs font-bold" style={{ color: "#ede9fe" }}>{obj.count}</span>
+                  <span className="text-xs" style={{ color: "rgba(245,237,224,0.25)" }}>/</span>
+                  <span className="text-xs font-bold" style={{ color: "#f5ede0" }}>{obj.count}</span>
                 </div>
               </div>
             ))}
@@ -245,10 +245,10 @@ export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
 
       {/* Call history */}
       <div className="p-5 space-y-4" style={GLASS}>
-        <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Historial de llamadas</p>
+        <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Historial de llamadas</p>
         <div className="gradient-sep" />
         {data.calls.length === 0 ? (
-          <p className="text-sm text-center py-6" style={{ color: "rgba(237,233,254,0.35)" }}>
+          <p className="text-sm text-center py-6" style={{ color: "rgba(245,237,224,0.35)" }}>
             Todavía no analizaste ninguna llamada.
           </p>
         ) : (
@@ -259,28 +259,28 @@ export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
                 onClick={() => onViewCall(call.id)}
                 className="w-full text-left rounded-xl p-3 transition-all duration-200"
                 style={{
-                  background: "rgba(139,92,246,0.06)",
-                  border: "1px solid rgba(139,92,246,0.12)",
+                  background: "rgba(217,119,6,0.06)",
+                  border: "1px solid rgba(217,119,6,0.12)",
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget
-                  el.style.background = "rgba(139,92,246,0.12)"
-                  el.style.borderColor = "rgba(139,92,246,0.28)"
+                  el.style.background = "rgba(217,119,6,0.12)"
+                  el.style.borderColor = "rgba(217,119,6,0.28)"
                   el.style.transform = "translateY(-2px)"
-                  el.style.boxShadow = "0 0 20px rgba(139,92,246,0.18)"
+                  el.style.boxShadow = "0 0 20px rgba(217,119,6,0.18)"
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget
-                  el.style.background = "rgba(139,92,246,0.06)"
-                  el.style.borderColor = "rgba(139,92,246,0.12)"
+                  el.style.background = "rgba(217,119,6,0.06)"
+                  el.style.borderColor = "rgba(217,119,6,0.12)"
                   el.style.transform = ""
                   el.style.boxShadow = ""
                 }}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: "#ede9fe" }}>{call.fileName}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "rgba(237,233,254,0.38)" }}>
+                    <p className="text-sm font-semibold truncate" style={{ color: "#f5ede0" }}>{call.fileName}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(245,237,224,0.38)" }}>
                       {call.date} · {call.duration} · Falla: {call.weakestPhase}
                     </p>
                   </div>

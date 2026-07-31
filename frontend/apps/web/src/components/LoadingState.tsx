@@ -51,15 +51,15 @@ export function LoadingState({ fileName }: LoadingStateProps) {
       <div
         className="rounded-2xl p-5 space-y-4"
         style={{
-          background: "rgba(10, 6, 25, 0.55)",
+          background: "rgba(28, 19, 10, 0.55)",
           backdropFilter: "blur(24px)",
-          border: "1px solid rgba(139, 92, 246, 0.22)",
+          border: "1px solid rgba(217, 119, 6, 0.22)",
         }}
       >
         {/* Header */}
         <div className="text-center space-y-0.5">
-          <p className="font-bold" style={{ color: "#ede9fe" }}>Analizando llamada</p>
-          <p className="text-xs truncate" style={{ color: "rgba(237,233,254,0.42)" }}>{fileName}</p>
+          <p className="font-bold" style={{ color: "#f5ede0" }}>Analizando llamada</p>
+          <p className="text-xs truncate" style={{ color: "rgba(245,237,224,0.42)" }}>{fileName}</p>
         </div>
 
         <div className="gradient-sep" />
@@ -69,15 +69,15 @@ export function LoadingState({ fileName }: LoadingStateProps) {
           <div style={{
             height: 8,
             borderRadius: 99,
-            background: "rgba(139,92,246,0.28)",
+            background: "rgba(217,119,6,0.28)",
             overflow: "hidden",
           }}>
             <div style={{
               height: "100%",
               width: `${pct}%`,
               borderRadius: 99,
-              background: "linear-gradient(90deg, #7c3aed, #a78bfa)",
-              boxShadow: "0 0 12px rgba(167,139,250,0.6)",
+              background: "linear-gradient(90deg, #d97706, #fbbf24)",
+              boxShadow: "0 0 12px rgba(251,191,36,0.6)",
               transition: "width 0.15s ease-out",
             }} />
           </div>
@@ -85,7 +85,7 @@ export function LoadingState({ fileName }: LoadingStateProps) {
             display: "flex",
             justifyContent: "space-between",
             fontSize: 11,
-            color: "rgba(167,139,250,0.7)",
+            color: "rgba(251,191,36,0.7)",
           }}>
             <span>{STEPS[step].label}</span>
             <span style={{ fontVariantNumeric: "tabular-nums" }}>{displayPct}%</span>
@@ -104,18 +104,18 @@ export function LoadingState({ fileName }: LoadingStateProps) {
                 <div
                   className="h-2 w-2 rounded-full shrink-0 transition-all duration-500"
                   style={{
-                    background: done || active ? "#a78bfa" : "rgba(139,92,246,0.2)",
-                    boxShadow: active ? "0 0 10px rgba(167,139,250,0.8)" : undefined,
+                    background: done || active ? "#fbbf24" : "rgba(217,119,6,0.2)",
+                    boxShadow: active ? "0 0 10px rgba(251,191,36,0.8)" : undefined,
                     animation: active ? "pulse 1s ease-in-out infinite" : undefined,
                   }}
                 />
                 <p
                   className="text-sm transition-colors duration-500 flex-1"
-                  style={{ color: done || active ? "#ede9fe" : "rgba(237,233,254,0.35)" }}
+                  style={{ color: done || active ? "#f5ede0" : "rgba(245,237,224,0.35)" }}
                 >
                   {s.label}
                 </p>
-                {done && <span className="text-xs" style={{ color: "#a78bfa" }}>✓</span>}
+                {done && <span className="text-xs" style={{ color: "#fbbf24" }}>✓</span>}
               </div>
             )
           })}
@@ -127,8 +127,8 @@ export function LoadingState({ fileName }: LoadingStateProps) {
         <div
           className="rounded-2xl p-6 space-y-3 text-center"
           style={{
-            background: "rgba(139, 92, 246, 0.05)",
-            border: "1px solid rgba(139, 92, 246, 0.15)",
+            background: "rgba(217, 119, 6, 0.05)",
+            border: "1px solid rgba(217, 119, 6, 0.15)",
           }}
         >
           <DarkSkeleton w="96px" h="10px" />
@@ -140,7 +140,7 @@ export function LoadingState({ fileName }: LoadingStateProps) {
 
         <div
           className="rounded-2xl p-5 space-y-4"
-          style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(139,92,246,0.15)" }}
+          style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(217,119,6,0.15)" }}
         >
           <DarkSkeleton w="160px" h="14px" />
           {Array.from({ length: 7 }).map((_, i) => (
@@ -157,7 +157,7 @@ export function LoadingState({ fileName }: LoadingStateProps) {
         <div className="grid grid-cols-2 gap-4">
           {[0, 1].map((j) => (
             <div key={j} className="rounded-2xl p-5 space-y-3"
-              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(139,92,246,0.15)" }}>
+              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(217,119,6,0.15)" }}>
               <DarkSkeleton w="96px" h="13px" />
               {Array.from({ length: 3 }).map((_, i) => (
                 <DarkSkeleton key={i} w="100%" h="10px" />

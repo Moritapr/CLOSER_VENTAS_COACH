@@ -43,9 +43,9 @@ void main() {
   /* Combine wave layers into one driving value */
   float wave = clamp((wR * 0.55 + wG * 0.40 + wB * 0.45 + wN * 0.22) * 0.55, 0.0, 1.0);
 
-  /* Purple / indigo palette: r=0.3*wave, g=0.1*wave, b=1.0*wave */
-  vec3 base = vec3(0.06, 0.03, 0.14);
-  vec3 col  = base + vec3(0.3 * wave, 0.1 * wave, 1.0 * wave);
+  /* Ámbar / dorado: r=1.0*wave, g=0.55*wave, b=0.12*wave */
+  vec3 base = vec3(0.08, 0.05, 0.02);
+  vec3 col  = base + vec3(1.0 * wave, 0.55 * wave, 0.12 * wave);
 
   /* Light vignette */
   vec2 vc  = uv - 0.5;

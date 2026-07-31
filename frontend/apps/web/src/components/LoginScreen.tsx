@@ -27,19 +27,19 @@ interface Beneficio {
 
 const BENEFICIOS: Beneficio[] = [
   {
-    icon: <ListChecks size={17} color="#a78bfa" strokeWidth={1.8} />,
-    title: "Análisis de las 7 fases del script",
-    description: "Dónde estuviste bien y dónde no.",
+    icon: <ListChecks size={17} color="#fbbf24" strokeWidth={1.8} />,
+    title: "Sabe dónde fallaste",
+    description: "Fase por fase, qué hiciste bien y qué no",
   },
   {
-    icon: <AlertTriangle size={17} color="#a78bfa" strokeWidth={1.8} />,
-    title: "Mapa de fricción",
-    description: "El momento exacto donde el cliente se enfrió.",
+    icon: <AlertTriangle size={17} color="#fbbf24" strokeWidth={1.8} />,
+    title: "El momento en que lo perdiste",
+    description: "La frase exacta donde el cliente se enfrió",
   },
   {
-    icon: <MessageSquareText size={17} color="#a78bfa" strokeWidth={1.8} />,
+    icon: <MessageSquareText size={17} color="#fbbf24" strokeWidth={1.8} />,
     title: "Frases listas para usar",
-    description: "Qué decir la próxima vez.",
+    description: "Qué decir la próxima vez",
   },
 ]
 
@@ -50,15 +50,15 @@ function BeneficioRow({ icon, title, description }: Beneficio) {
         style={{
           width: 34, height: 34, borderRadius: 10, flexShrink: 0,
           display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(139,92,246,0.14)",
-          border: "1px solid rgba(139,92,246,0.28)",
+          background: "rgba(217,119,6,0.14)",
+          border: "1px solid rgba(217,119,6,0.28)",
         }}
       >
         {icon}
       </div>
       <div>
-        <p style={{ color: "#ede9fe", fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>{title}</p>
-        <p style={{ color: "rgba(237,233,254,0.48)", fontSize: 12.5, lineHeight: 1.4, marginTop: 2 }}>{description}</p>
+        <p style={{ color: "#f5ede0", fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>{title}</p>
+        <p style={{ color: "rgba(245,237,224,0.48)", fontSize: 12.5, lineHeight: 1.4, marginTop: 2 }}>{description}</p>
       </div>
     </div>
   )
@@ -108,7 +108,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
         {/* Wordmark */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
           <Logo size={36} />
-          <span style={{ color: "#ede9fe", fontSize: 15, fontWeight: 800, letterSpacing: "-0.01em" }}>
+          <span style={{ color: "#f5ede0", fontSize: 15, fontWeight: 800, letterSpacing: "-0.01em" }}>
             Closer Ventas Coach
           </span>
         </div>
@@ -121,7 +121,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
               fontWeight: 900,
               letterSpacing: "-0.03em",
               lineHeight: 1.2,
-              background: "linear-gradient(135deg, #c4b5fd 0%, #818cf8 45%, #a78bfa 100%)",
+              background: "linear-gradient(135deg, #fcd34d 0%, #d97706 45%, #fbbf24 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -130,7 +130,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
           >
             Deja de adivinar por qué no cerraste.
           </h1>
-          <p style={{ color: "rgba(237,233,254,0.55)", fontSize: 14, lineHeight: 1.5, marginTop: 10 }}>
+          <p style={{ color: "rgba(245,237,224,0.55)", fontSize: 14, lineHeight: 1.5, marginTop: 10 }}>
             Sube la grabación de tu llamada. La IA te dice exactamente dónde perdiste
             al cliente y qué debiste decir.
           </p>
@@ -153,13 +153,13 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
         {/* Glass card */}
         <div
           style={{
-            background: "rgba(10, 6, 28, 0.65)",
+            background: "rgba(28, 19, 10, 0.65)",
             backdropFilter: "blur(32px)",
             WebkitBackdropFilter: "blur(32px)",
-            border: "1px solid rgba(139, 92, 246, 0.25)",
+            border: "1px solid rgba(217, 119, 6, 0.25)",
             borderRadius: 20,
             padding: "22px 22px 20px",
-            boxShadow: "0 0 40px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.07)",
+            boxShadow: "0 0 40px rgba(217,119,6,0.15), inset 0 1px 0 rgba(255,255,255,0.07)",
             display: "flex",
             flexDirection: "column",
             gap: 16,
@@ -184,7 +184,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
                 width: "100%",
                 height: 46,
                 borderRadius: 8,
-                border: "1px solid rgba(139, 92, 246, 0.22)",
+                border: "1px solid rgba(217, 119, 6, 0.22)",
                 cursor: loading ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -208,7 +208,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
               </p>
             )}
 
-            <p style={{ color: "rgba(237,233,254,0.32)", fontSize: 11, textAlign: "center" }}>
+            <p style={{ color: "rgba(245,237,224,0.32)", fontSize: 11, textAlign: "center" }}>
               Tus grabaciones son privadas y solo tú las ves.
             </p>
           </div>

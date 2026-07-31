@@ -80,6 +80,9 @@ function hasText(value: string | null | undefined): value is string {
 
 export interface AnalysisResult {
   score: number
+  // Ausente en análisis guardados antes de este campo — se trata como true
+  // para no romper el historial viejo.
+  esLlamadaDeVentas?: boolean
   duration: string
   summary: string
   resultado?: string
@@ -332,6 +335,37 @@ function ScoreCard({
 }
 
 export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProps) {
+  if (result.esLlamadaDeVentas === false) {
+    return (
+      <div className="space-y-5">
+        <Section delay={0}>
+          <div className="p-8 text-center space-y-4" style={GLASS}>
+            <p className="text-xs" style={{ color: "rgba(245,237,224,0.42)" }}>
+              {fileName} · {result.duration}
+            </p>
+            <h2 className="text-lg font-black" style={{ color: "#f5ede0" }}>
+              Esta grabación no parece una llamada de ventas
+            </h2>
+            <p className="text-sm max-w-md mx-auto leading-relaxed" style={{ color: "rgba(245,237,224,0.6)" }}>
+              {result.summary}
+            </p>
+            <button
+              onClick={onReset}
+              className="rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200"
+              style={{
+                background: "rgba(217,119,6,0.12)",
+                border: "1px solid rgba(217,119,6,0.25)",
+                color: "#fcd34d",
+              }}
+            >
+              Subir otra grabación
+            </button>
+          </div>
+        </Section>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
 

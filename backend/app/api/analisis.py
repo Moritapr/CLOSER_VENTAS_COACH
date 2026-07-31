@@ -18,7 +18,18 @@ async def analizar(request: TranscripcionRequest, user_id: str = Depends(get_cur
         raise HTTPException(status_code=400, detail="Transcripción muy corta o vacía")
     try:
         resultado = await analizar_llamada(request.transcripcion)
-        comparativa = await calcular_comparativa_historica(resultado["puntaje_general"], user_id)
+
+        if resultado.get("es_llamada_de_ventas", True):
+            comparativa = await calcular_comparativa_historica(resultado["puntaje_general"], user_id)
+        else:
+            # No hay puntaje ni historial que comparar cuando la grabación
+            # no es una llamada de ventas.
+            comparativa = {
+                "promedio_historico": None,
+                "diferencia_vs_promedio": None,
+                "total_llamadas_previas": None,
+            }
+
         guardado = await guardar_analisis(
             transcripcion=request.transcripcion,
             analisis=resultado,
@@ -26,7 +37,12 @@ async def analizar(request: TranscripcionRequest, user_id: str = Depends(get_cur
             nombre_archivo=request.nombre_archivo,
             duracion_segundos=request.duracion_segundos
         )
-        return {"status": "ok", "id": guardado["id"], "analisis": resultado, **comparativa}
+        return {
+            "status": "ok",
+            "id": guardado["id"] if guardado else None,
+            "analisis": resultado,
+            **comparativa,
+        }
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")

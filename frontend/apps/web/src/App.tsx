@@ -62,7 +62,8 @@ interface BackendFriccionMomento {
 }
 
 interface BackendAnalysis {
-  puntaje_general: number
+  es_llamada_de_ventas?: boolean
+  puntaje_general: number | null
   resultado?: string
   paso_a_videollamada?: boolean
   fases: Record<typeof FASE_KEYS[number], BackendPhase>
@@ -89,7 +90,10 @@ function secondsToDuration(s: number): string {
 
 function adaptAnalysis(analysis: BackendAnalysis, duracion_segundos: number): AnalysisResult {
   return {
-    score: Math.round(analysis.puntaje_general),
+    // Sin score cuando no es llamada de ventas — analysis.puntaje_general
+    // viene null y el reporte completo ni se renderiza en ese caso.
+    score: analysis.puntaje_general != null ? Math.round(analysis.puntaje_general) : 0,
+    esLlamadaDeVentas: analysis.es_llamada_de_ventas ?? true,
     duration: secondsToDuration(duracion_segundos),
     summary: analysis.consejo_principal,
     resultado: analysis.resultado,

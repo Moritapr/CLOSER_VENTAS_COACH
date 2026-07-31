@@ -88,6 +88,23 @@ PROMPT_ANALISIS = """Escuchaste esta llamada de ventas IUL. Analiza cada fase y 
 TRANSCRIPCIÓN:
 {transcripcion}
 
+ANTES QUE NADA — confirmá que sea una llamada de ventas real:
+Esta grabación puede no ser una llamada de ventas IUL con un prospecto (por ejemplo: una reunión interna del
+equipo, una conversación personal, un audio equivocado, una capacitación, etc.). Marca
+"es_llamada_de_ventas": false si no es una llamada de ventas real. En ese caso NO inventes análisis de fases,
+objeciones, fricción ni penalizaciones — no hay nada que evaluar. Completá el resto del JSON así:
+- "resultado": "EN_PROCESO" (no tiene significado en este caso, se ignora)
+- cada fase: "puntaje": 1, "realizado": false, "feedback": "No aplica: esta grabación no es una llamada de
+  ventas.", "fragmento": null, "que_debio_decir": null
+- "objeciones_detectadas", "mapa_friccion", "fortalezas", "areas_de_mejora": listas vacías
+- "asertividad_closer" y "termometro_cliente": inicio/medio/final en "media"/"neutral" respectivamente,
+  "observacion": "No aplica: esta grabación no es una llamada de ventas."
+- "evaluacion_dominio": los 7 criterios con "ocurrio": false y "evidencia": null
+- "consejo_principal": explicá en 1-2 frases qué contiene realmente la grabación (de qué se trata, quiénes
+  parecen estar hablando), para que el usuario entienda por qué no se generó un análisis de venta
+Si SÍ es una llamada de ventas real con un prospecto, marca "es_llamada_de_ventas": true y analizá todo con
+normalidad, siguiendo el resto de las instrucciones.
+
 CRITERIOS OBSERVABLES PARA evaluacion_dominio — se evalúa AL FINAL, después de escribir el resto del análisis.
 Cada criterio tiene señales concretas que indican qué tipo de momento cuenta. Pero tener una señal no alcanza:
 para marcar ocurrio=true tenés que poder citar en evidencia el fragmento textual exacto de la transcripción
@@ -124,6 +141,7 @@ evidencia en null si ocurrio es true, y no inventes una cita si ocurrio es false
 Responde EXACTAMENTE con esta estructura JSON, sin texto adicional antes ni después:
 
 {{
+  "es_llamada_de_ventas": <true|false, ¿esta grabación es realmente una llamada de ventas IUL con un prospecto? false si es una reunión interna, una conversación personal, un audio equivocado o cualquier cosa que no sea una llamada de ventas>,
   "resultado": "<CERRADA | VIDEOLLAMADA_AGENDADA | EN_PROCESO | PERDIDA>",
   "paso_a_videollamada": <true|false>,
   "fases": {{
@@ -306,6 +324,13 @@ async def analizar_llamada(transcripcion: str) -> dict:
         print(f"JSON PARSE ERROR: {e}")
         print(f"CONTENIDO COMPLETO:\n{texto}")
         raise ValueError(f"La respuesta de Claude no es JSON válido: {e}")
+
+    if not resultado.get("es_llamada_de_ventas", True):
+        # No es una llamada de ventas real: no hay dominio que evaluar ni
+        # penalizaciones que aplicar. El puntaje queda en null — la nota
+        # perfecta que salía antes (por 7 criterios en false) era el bug.
+        resultado["puntaje_general"] = None
+        return resultado
 
     evaluacion_dominio = resultado.get("evaluacion_dominio")
     if not evaluacion_dominio or not any(clave in evaluacion_dominio for clave in PENALIZACIONES_DOMINIO):

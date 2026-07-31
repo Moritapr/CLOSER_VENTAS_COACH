@@ -40,7 +40,13 @@ async def guardar_analisis(
     user_id: str,
     nombre_archivo: str = None,
     duracion_segundos: float = None
-) -> dict:
+) -> dict | None:
+    if not analisis.get("es_llamada_de_ventas", True):
+        # No es una llamada de ventas real: no persistir en Supabase para no
+        # contaminar el historial, el promedio ni la detección de patrones.
+        print(f"NO ES LLAMADA DE VENTAS: '{nombre_archivo}' no se guarda")
+        return None
+
     fases = analisis.get("fases", {})
 
     registro = {

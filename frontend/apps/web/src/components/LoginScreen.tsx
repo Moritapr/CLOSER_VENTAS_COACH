@@ -2,6 +2,7 @@ import { useState } from "react"
 import { ListChecks, AlertTriangle, MessageSquareText } from "lucide-react"
 import { WebGLShader } from "@/components/ui/web-gl-shader"
 import { Logo } from "@/components/Logo"
+import { ReportPreview } from "@/components/ReportPreview"
 
 interface LoginScreenProps {
   onSignInWithGoogle: () => void | Promise<void>
@@ -94,126 +95,159 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
 
       {/* ── Landing + login — sits above the shader ── */}
       <div
-        className="animate-fade-slide-up"
+        className="login-split-row"
         style={{
           position: "relative",
           zIndex: 10,
           width: "100%",
-          maxWidth: 420,
+          maxWidth: 1080,
           display: "flex",
-          flexDirection: "column",
-          gap: 20,
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {/* Wordmark */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-          <Logo size={36} />
-          <span style={{ color: "#f5ede0", fontSize: 15, fontWeight: 800, letterSpacing: "-0.01em" }}>
-            Closer Ventas Coach
-          </span>
-        </div>
-
-        {/* Headline + subhead */}
-        <div style={{ textAlign: "center" }}>
-          <h1
-            style={{
-              fontSize: "clamp(22px, 5.5vw, 30px)",
-              fontWeight: 900,
-              letterSpacing: "-0.03em",
-              lineHeight: 1.2,
-              background: "linear-gradient(135deg, #fcd34d 0%, #d97706 45%, #fbbf24 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              margin: 0,
-            }}
-          >
-            Deja de adivinar por qué no cerraste.
-          </h1>
-          <p style={{ color: "rgba(245,237,224,0.55)", fontSize: 14, lineHeight: 1.5, marginTop: 10 }}>
-            Sube la grabación de tu llamada. La IA te dice exactamente dónde perdiste
-            al cliente y qué debiste decir.
-          </p>
-        </div>
-
-        {sessionExpired && (
-          <div style={{
-            textAlign: "center",
-            padding: "10px 14px",
-            borderRadius: 12,
-            background: "rgba(251,191,36,0.08)",
-            border: "1px solid rgba(251,191,36,0.25)",
-            color: "#fbbf24",
-            fontSize: 12.5,
-          }}>
-            Tu sesión expiró. Vuelve a iniciar sesión.
-          </div>
-        )}
-
-        {/* Glass card */}
         <div
+          className="animate-fade-slide-up login-left-col"
           style={{
-            background: "rgba(28, 19, 10, 0.65)",
-            backdropFilter: "blur(32px)",
-            WebkitBackdropFilter: "blur(32px)",
-            border: "1px solid rgba(217, 119, 6, 0.25)",
-            borderRadius: 20,
-            padding: "22px 22px 20px",
-            boxShadow: "0 0 40px rgba(217,119,6,0.15), inset 0 1px 0 rgba(255,255,255,0.07)",
+            width: "100%",
+            maxWidth: 420,
             display: "flex",
             flexDirection: "column",
-            gap: 16,
+            gap: 20,
+            flexShrink: 0,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {BENEFICIOS.map((b) => (
-              <BeneficioRow key={b.title} {...b} />
-            ))}
+          {/* Wordmark */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            <Logo size={36} />
+            <span style={{ color: "#f5ede0", fontSize: 15, fontWeight: 800, letterSpacing: "-0.01em" }}>
+              Closer Ventas Coach
+            </span>
           </div>
 
-          <div className="gradient-sep" />
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <button
-              type="button"
-              onClick={handleClick}
-              disabled={loading}
-              onMouseEnter={() => setBtnHover(true)}
-              onMouseLeave={() => setBtnHover(false)}
+          {/* Headline + subhead */}
+          <div style={{ textAlign: "center" }}>
+            <h1
               style={{
-                width: "100%",
-                height: 46,
-                borderRadius: 8,
-                border: "1px solid rgba(217, 119, 6, 0.22)",
-                cursor: loading ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                background: btnHover && !loading ? "rgba(245,245,250,1)" : "#fff",
-                color: "#1f1f1f",
-                fontSize: 14,
-                fontWeight: 700,
-                opacity: loading ? 0.6 : 1,
-                transition: "background 0.2s ease, opacity 0.2s ease",
+                fontSize: "clamp(22px, 5.5vw, 30px)",
+                fontWeight: 900,
+                letterSpacing: "-0.03em",
+                lineHeight: 1.2,
+                background: "linear-gradient(135deg, #fcd34d 0%, #d97706 45%, #fbbf24 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                margin: 0,
               }}
             >
-              <GoogleIcon />
-              {loading ? "Conectando..." : "Continuar con Google"}
-            </button>
-
-            {error && (
-              <p style={{ color: "#f87171", fontSize: 12, textAlign: "center" }}>
-                No pudimos conectar con Google. Intenta de nuevo.
-              </p>
-            )}
-
-            <p style={{ color: "rgba(245,237,224,0.32)", fontSize: 11, textAlign: "center" }}>
-              Tus grabaciones son privadas y solo tú las ves.
+              Deja de adivinar por qué no cerraste.
+            </h1>
+            <p style={{ color: "rgba(245,237,224,0.55)", fontSize: 14, lineHeight: 1.5, marginTop: 10 }}>
+              Sube la grabación de tu llamada. La IA te dice exactamente dónde perdiste
+              al cliente y qué debiste decir.
             </p>
           </div>
+
+          {sessionExpired && (
+            <div style={{
+              textAlign: "center",
+              padding: "10px 14px",
+              borderRadius: 12,
+              background: "rgba(251,191,36,0.08)",
+              border: "1px solid rgba(251,191,36,0.25)",
+              color: "#fbbf24",
+              fontSize: 12.5,
+            }}>
+              Tu sesión expiró. Vuelve a iniciar sesión.
+            </div>
+          )}
+
+          {/* Glass card */}
+          <div
+            style={{
+              background: "rgba(28, 19, 10, 0.65)",
+              backdropFilter: "blur(32px)",
+              WebkitBackdropFilter: "blur(32px)",
+              border: "1px solid rgba(217, 119, 6, 0.25)",
+              borderRadius: 20,
+              padding: "22px 22px 20px",
+              boxShadow: "0 0 40px rgba(217,119,6,0.15), inset 0 1px 0 rgba(255,255,255,0.07)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {BENEFICIOS.map((b) => (
+                <BeneficioRow key={b.title} {...b} />
+              ))}
+            </div>
+
+            <div className="gradient-sep" />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                type="button"
+                onClick={handleClick}
+                disabled={loading}
+                onMouseEnter={() => setBtnHover(true)}
+                onMouseLeave={() => setBtnHover(false)}
+                style={{
+                  width: "100%",
+                  height: 46,
+                  borderRadius: 8,
+                  border: "1px solid rgba(217, 119, 6, 0.22)",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  background: btnHover && !loading ? "rgba(245,245,250,1)" : "#fff",
+                  color: "#1f1f1f",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  opacity: loading ? 0.6 : 1,
+                  transition: "background 0.2s ease, opacity 0.2s ease",
+                }}
+              >
+                <GoogleIcon />
+                {loading ? "Conectando..." : "Continuar con Google"}
+              </button>
+
+              {error && (
+                <p style={{ color: "#f87171", fontSize: 12, textAlign: "center" }}>
+                  No pudimos conectar con Google. Intenta de nuevo.
+                </p>
+              )}
+
+              <p style={{ color: "rgba(245,237,224,0.32)", fontSize: 11, textAlign: "center" }}>
+                Tus grabaciones son privadas y solo tú las ves.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Preview del producto — solo desktop, ver .login-right-col abajo */}
+        <div className="login-right-col animate-fade-slide-up" style={{ animationDelay: "150ms", flex: 1, justifyContent: "center" }}>
+          <ReportPreview />
         </div>
       </div>
+
+      <style>{`
+        .login-right-col {
+          display: none;
+        }
+        @media (min-width: 1024px) {
+          .login-split-row {
+            justify-content: space-between !important;
+            gap: 48px;
+          }
+          .login-right-col {
+            display: flex !important;
+            align-items: center;
+          }
+        }
+      `}</style>
     </div>
   )
 }

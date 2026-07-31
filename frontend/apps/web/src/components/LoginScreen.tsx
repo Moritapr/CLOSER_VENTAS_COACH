@@ -2,24 +2,40 @@ import { useState } from "react"
 import { WebGLShader } from "@/components/ui/web-gl-shader"
 
 interface LoginScreenProps {
-  onLogin: (password: string) => boolean
+  onSignInWithGoogle: () => void | Promise<void>
 }
 
-export function LoginScreen({ onLogin }: LoginScreenProps) {
-  const [password, setPassword] = useState("")
-  const [error, setError]       = useState(false)
-  const [loading, setLoading]   = useState(false)
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M23.52 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.28 1.48-1.13 2.73-2.4 3.58v2.98h3.86c2.26-2.08 3.59-5.15 3.59-8.8z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.92l-3.86-2.98c-1.07.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.28v3.09C3.25 21.3 7.31 24 12 24z" />
+      <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.28A11.96 11.96 0 000 12c0 1.94.47 3.77 1.28 5.38l3.99-3.09z" />
+      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.7 1.28 6.62l3.99 3.09c.95-2.85 3.6-4.96 6.73-4.96z" />
+    </svg>
+  )
+}
+
+export function LoginScreen({ onSignInWithGoogle }: LoginScreenProps) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
   const [btnHover, setBtnHover] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!password || loading) return
+  async function handleClick() {
+    if (loading) return
     setLoading(true)
     setError(false)
-    await new Promise((r) => setTimeout(r, 400))
-    const ok = onLogin(password)
-    if (!ok) { setError(true); setPassword("") }
-    setLoading(false)
+    try {
+      await onSignInWithGoogle()
+      // En el flujo normal, signInWithGoogle redirige el navegador a Google
+      // y este componente se desmonta. Si llegamos acá sin error, la
+      // redirección no ocurrió — lo tratamos como falla para no dejar el
+      // botón colgado en "Conectando...".
+      setLoading(false)
+    } catch {
+      setError(true)
+      setLoading(false)
+    }
   }
 
   return (
@@ -90,62 +106,41 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           {/* Gradient separator */}
           <div className="gradient-sep" />
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* Password input */}
-            <div>
-              <input
-                type="password"
-                placeholder="Contraseña"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(false) }}
-                autoFocus
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 12,
-                  fontSize: 14,
-                  outline: "none",
-                  background: "rgba(139, 92, 246, 0.1)",
-                  border: error
-                    ? "1px solid rgba(248, 113, 113, 0.65)"
-                    : "1px solid rgba(139, 92, 246, 0.28)",
-                  color: "#ede9fe",
-                  boxShadow: error ? "0 0 20px rgba(248,113,113,0.18)" : undefined,
-                  transition: "border-color 0.2s, box-shadow 0.2s",
-                  boxSizing: "border-box",
-                }}
-              />
-              {error && (
-                <p style={{ color: "#f87171", fontSize: 12, marginTop: 6 }}>
-                  Contraseña incorrecta. Intentá de nuevo.
-                </p>
-              )}
-            </div>
-
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <button
-              type="submit"
-              disabled={!password || loading}
+              type="button"
+              onClick={handleClick}
+              disabled={loading}
               onMouseEnter={() => setBtnHover(true)}
               onMouseLeave={() => setBtnHover(false)}
               style={{
                 width: "100%",
                 height: 44,
                 borderRadius: 8,
-                border: "none",
-                cursor: !password || loading ? "not-allowed" : "pointer",
-                background: btnHover && !(!password || loading)
-                  ? "linear-gradient(135deg, #9061f9, #6366f1)"
-                  : "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                color: "#fff",
+                border: "1px solid rgba(139, 92, 246, 0.22)",
+                cursor: loading ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                background: btnHover && !loading ? "rgba(245,245,250,1)" : "#fff",
+                color: "#1f1f1f",
                 fontSize: 14,
                 fontWeight: 700,
-                opacity: !password || loading ? 0.5 : 1,
+                opacity: loading ? 0.6 : 1,
                 transition: "background 0.2s ease, opacity 0.2s ease",
               }}
             >
-              {loading ? "Verificando..." : "Entrar"}
+              <GoogleIcon />
+              {loading ? "Conectando..." : "Continuar con Google"}
             </button>
-          </form>
+
+            {error && (
+              <p style={{ color: "#f87171", fontSize: 12, textAlign: "center" }}>
+                No pudimos conectar con Google. Intentá de nuevo.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

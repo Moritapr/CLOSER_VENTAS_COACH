@@ -1,27 +1,37 @@
-import { useState } from "react"
-
-const TOKEN_KEY = "cvc_auth"
-const TOKEN_VALUE = "authenticated"
+import { useEffect, useState } from "react"
+import type { Session } from "@supabase/supabase-js"
+import { supabase } from "@/lib/supabase"
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    () => localStorage.getItem(TOKEN_KEY) === TOKEN_VALUE
-  )
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  function login(password: string): boolean {
-    const correct = import.meta.env.VITE_APP_PASSWORD
-    if (password === correct) {
-      localStorage.setItem(TOKEN_KEY, TOKEN_VALUE)
-      setIsAuthenticated(true)
-      return true
-    }
-    return false
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setLoading(false)
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+    })
+
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  async function signInWithGoogle() {
+    await supabase.auth.signInWithOAuth({ provider: "google" })
   }
 
-  function logout() {
-    localStorage.removeItem(TOKEN_KEY)
-    setIsAuthenticated(false)
+  async function signOut() {
+    await supabase.auth.signOut()
   }
 
-  return { isAuthenticated, login, logout }
+  return {
+    user: session?.user ?? null,
+    session,
+    loading,
+    signInWithGoogle,
+    signOut,
+  }
 }

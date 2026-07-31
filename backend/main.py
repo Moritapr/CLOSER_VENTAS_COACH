@@ -4,6 +4,7 @@ from app.core.config import settings
 from app.api.upload import router as upload_router
 from app.api.analisis import router as analisis_router
 from app.api.dashboard import router as dashboard_router
+from app.api.patrones import router as patrones_router
 
 app = FastAPI(
     title="Closer Ventas Coach API",
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(upload_router)
 app.include_router(analisis_router)
 app.include_router(dashboard_router)
+app.include_router(patrones_router)
 
 @app.get("/")
 def root():

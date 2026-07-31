@@ -11,7 +11,7 @@ import {
   type EvaluacionDominio,
 } from "@/components/AnalysisReport"
 import { LoginScreen } from "@/components/LoginScreen"
-import { Dashboard, type DashboardData } from "@/components/Dashboard"
+import { Dashboard, type DashboardData, type PatronesData } from "@/components/Dashboard"
 import { useAuth } from "@/hooks/useAuth"
 
 type AppState = "idle" | "loading" | "done"
@@ -120,6 +120,10 @@ const EMPTY_DASHBOARD: DashboardData = {
   calls: [], weeklyScores: [], phaseFails: [], topObjections: [],
 }
 
+const EMPTY_PATRONES: PatronesData = {
+  total_llamadas_analizadas: 0, patrones: [],
+}
+
 export function App() {
   const { isAuthenticated, login, logout } = useAuth()
   const [tab, setTab] = useState<Tab>("analizar")
@@ -128,15 +132,20 @@ export function App() {
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)
   const [dashboardData, setDashboardData] = useState<DashboardData>(EMPTY_DASHBOARD)
+  const [patronesData, setPatronesData] = useState<PatronesData>(EMPTY_PATRONES)
   const [dashboardLoading, setDashboardLoading] = useState(false)
 
   useEffect(() => {
     if (tab !== "dashboard") return
     setDashboardLoading(true)
-    fetch(`${API_BASE}/api/dashboard`)
-      .then((r) => { if (!r.ok) throw new Error(); return r.json() })
-      .then((data: DashboardData) => setDashboardData(data))
-      .catch(() => {})
+    Promise.allSettled([
+      fetch(`${API_BASE}/api/dashboard`).then((r) => { if (!r.ok) throw new Error(); return r.json() }),
+      fetch(`${API_BASE}/api/patrones`).then((r) => { if (!r.ok) throw new Error(); return r.json() }),
+    ])
+      .then(([dashboardResult, patronesResult]) => {
+        if (dashboardResult.status === "fulfilled") setDashboardData(dashboardResult.value as DashboardData)
+        if (patronesResult.status === "fulfilled") setPatronesData(patronesResult.value as PatronesData)
+      })
       .finally(() => setDashboardLoading(false))
   }, [tab])
 
@@ -160,9 +169,24 @@ export function App() {
         body: JSON.stringify({ transcripcion, nombre_archivo: file.name, duracion_segundos }),
       })
       if (!analyzeRes.ok) throw new Error(`Error al analizar la llamada (${analyzeRes.status}).`)
-      const { analisis: analysis }: { analisis: BackendAnalysis } = await analyzeRes.json()
+      const {
+        analisis: analysis,
+        promedio_historico,
+        diferencia_vs_promedio,
+        total_llamadas_previas,
+      }: {
+        analisis: BackendAnalysis
+        promedio_historico?: number | null
+        diferencia_vs_promedio?: number | null
+        total_llamadas_previas?: number | null
+      } = await analyzeRes.json()
 
-      setResult(adaptAnalysis(analysis, duracion_segundos))
+      setResult({
+        ...adaptAnalysis(analysis, duracion_segundos),
+        promedioHistorico: promedio_historico ?? null,
+        diferenciaVsPromedio: diferencia_vs_promedio ?? null,
+        totalLlamadasPrevias: total_llamadas_previas ?? null,
+      })
       setState("done")
     } catch (err) {
       console.error("[API]", err)
@@ -282,6 +306,7 @@ export function App() {
             ) : (
               <Dashboard
                 data={dashboardData}
+                patrones={patronesData}
                 onViewCall={(id) => console.log("view call", id)}
               />
             )

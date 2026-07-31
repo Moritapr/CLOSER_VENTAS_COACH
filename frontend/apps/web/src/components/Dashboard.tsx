@@ -1,4 +1,17 @@
 import { useEffect, useState } from "react"
+import { DOMINIO_PENALTIES } from "@/components/AnalysisReport"
+
+export interface PatronRepetido {
+  criterio: string
+  veces: number
+  de: number
+  porcentaje: number
+}
+
+export interface PatronesData {
+  total_llamadas_analizadas: number
+  patrones: PatronRepetido[]
+}
 
 export interface CallRecord {
   id: string
@@ -18,6 +31,7 @@ export interface DashboardData {
 
 interface DashboardProps {
   data: DashboardData
+  patrones: PatronesData
   onViewCall: (id: string) => void
 }
 
@@ -30,6 +44,39 @@ const GLASS = {
 } as const
 
 function scoreHue(s: number) { return s <= 50 ? s * 0.9 : 45 + (s - 50) * 1.5 }
+
+function labelCriterio(criterio: string): string {
+  return DOMINIO_PENALTIES.find((p) => p.key === criterio)?.label ?? criterio
+}
+
+function PatronesRepetidos({ patrones }: { patrones: PatronesData }) {
+  return (
+    <div
+      className="p-5 space-y-4"
+      style={{ ...GLASS, boxShadow: "0 0 25px rgba(139,92,246,0.18), 0 0 50px rgba(139,92,246,0.07)" }}
+    >
+      <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Tu patrón repetido</p>
+      <div className="gradient-sep" />
+      {patrones.patrones.length === 0 ? (
+        <p className="text-sm text-center py-2" style={{ color: "rgba(237,233,254,0.35)" }}>
+          Necesitas más llamadas analizadas para detectar patrones.
+        </p>
+      ) : (
+        <ul className="space-y-2.5">
+          {patrones.patrones.map((p) => (
+            <li key={p.criterio} className="text-sm flex items-start gap-2" style={{ color: "rgba(237,233,254,0.75)" }}>
+              <span className="shrink-0 mt-0.5 font-bold" style={{ color: "#fbbf24" }}>!</span>
+              <span>
+                <strong style={{ color: "#ede9fe" }}>{labelCriterio(p.criterio)}</strong> apareció en{" "}
+                {p.veces} de tus últimas {p.de} llamadas ({p.porcentaje}%).
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 
 function ScorePill({ score }: { score: number }) {
   const hue = scoreHue(score)
@@ -88,7 +135,7 @@ function WeeklyChart({ data }: { data: { label: string; score: number }[] }) {
   )
 }
 
-export function Dashboard({ data, onViewCall }: DashboardProps) {
+export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
   const avgScore = data.calls.length
     ? Math.round(data.calls.reduce((a, c) => a + c.score, 0) / data.calls.length)
     : 0
@@ -104,6 +151,9 @@ export function Dashboard({ data, onViewCall }: DashboardProps) {
 
   return (
     <div className="space-y-5 animate-fade-slide-up">
+
+      {/* Tu patrón repetido — destacado arriba de todo */}
+      <PatronesRepetidos patrones={patrones} />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

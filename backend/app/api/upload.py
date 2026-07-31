@@ -21,10 +21,13 @@ CONTENT_TYPE_EXT = {
 
 
 def to_mp3(audio_bytes: bytes, content_type: str, filename: str) -> tuple[bytes, str]:
-    # Passthrough for native MP3 — no conversion needed
+    # Siempre pasa por ffmpeg, incluso si el input ya es MP3: no es solo una
+    # conversión de formato, es una compresión (mono/16kHz/32kbps) que reduce
+    # el tamaño del archivo para transcripción. Un MP3 nativo grande (ej.
+    # exportado en estéreo/alta calidad desde el celular) tenía el mismo
+    # problema de tamaño que un WAV o M4A sin comprimir — el passthrough que
+    # había acá antes lo dejaba pasar intacto y Groq lo rechazaba con 413.
     ext = CONTENT_TYPE_EXT.get(content_type, "")
-    if ext == "mp3":
-        return audio_bytes, filename
 
     # Derive input extension from content_type or filename
     if not ext:

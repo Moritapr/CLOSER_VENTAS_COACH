@@ -1,5 +1,32 @@
 from app.db.supabase import supabase
 
+
+async def calcular_comparativa_historica(puntaje_actual: int) -> dict:
+    # Se llama ANTES de insertar la llamada actual, así el promedio nunca
+    # se cuenta a sí mismo — sin importar si guardar_analisis termina
+    # insertando una fila nueva o devolviendo un duplicado existente.
+    res = supabase.table("analisis").select("puntaje_general").execute()
+    puntajes = [
+        row["puntaje_general"] for row in (res.data or [])
+        if row.get("puntaje_general") is not None
+    ]
+    total = len(puntajes)
+
+    if total < 3:
+        return {
+            "promedio_historico": None,
+            "diferencia_vs_promedio": None,
+            "total_llamadas_previas": total,
+        }
+
+    promedio = sum(puntajes) / total
+    return {
+        "promedio_historico": round(promedio, 1),
+        "diferencia_vs_promedio": round(puntaje_actual - promedio, 1),
+        "total_llamadas_previas": total,
+    }
+
+
 async def guardar_analisis(
     transcripcion: str,
     analisis: dict,

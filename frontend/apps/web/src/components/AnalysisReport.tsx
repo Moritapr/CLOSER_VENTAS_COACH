@@ -91,6 +91,9 @@ export interface AnalysisResult {
   asertividadCloser?: AsertividadCloser
   termometroCliente?: TermometroCliente
   evaluacionDominio?: EvaluacionDominio
+  promedioHistorico?: number | null
+  diferenciaVsPromedio?: number | null
+  totalLlamadasPrevias?: number | null
   strengths: string[]
   weaknesses: string[]
   objections?: { type: string; handled: boolean }[]
@@ -120,7 +123,9 @@ const RESULTADO_STYLES: Record<string, { label: string; color: string; bg: strin
   PERDIDA:               { label: "Perdida",               color: "#f87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.3)" },
 }
 
-const DOMINIO_PENALTIES: { key: keyof EvaluacionDominio; label: string; weight: number }[] = [
+// Exportado para que Dashboard.tsx reuse el mismo mapeo de nombres legibles
+// en "Tu patrón repetido" — una sola fuente de verdad para los labels.
+export const DOMINIO_PENALTIES: { key: keyof EvaluacionDominio; label: string; weight: number }[] = [
   { key: "cliente_domino",          label: "El cliente dominó la conversación",              weight: 30 },
   { key: "objecion_mal_resuelta",   label: "Una objeción importante quedó mal resuelta",      weight: 20 },
   { key: "genero_mas_dudas",        label: "Generaste más dudas en vez de aclarar",           weight: 20 },
@@ -268,7 +273,24 @@ function ScoreBreakdown({ evaluacionDominio }: { evaluacionDominio: EvaluacionDo
   )
 }
 
-function ScoreCard({ score, summary, evaluacionDominio }: { score: number; summary: string; evaluacionDominio?: EvaluacionDominio }) {
+function ComparativaHistorica({ diferencia }: { diferencia: number }) {
+  const arriba = diferencia >= 0
+  const puntos = Math.round(Math.abs(diferencia))
+  return (
+    <p className="text-xs font-semibold mt-0.5" style={{ color: arriba ? "#34d399" : "#fbbf24" }}>
+      {puntos} {puntos === 1 ? "punto" : "puntos"} {arriba ? "sobre" : "bajo"} tu promedio
+    </p>
+  )
+}
+
+function ScoreCard({
+  score, summary, evaluacionDominio, diferenciaVsPromedio,
+}: {
+  score: number
+  summary: string
+  evaluacionDominio?: EvaluacionDominio
+  diferenciaVsPromedio?: number | null
+}) {
   const displayed = useCountUp(score, 1300)
   const hue = scoreHue(score)
   const scoreColor = `hsl(${hue}, 85%, 65%)`
@@ -299,6 +321,7 @@ function ScoreCard({ score, summary, evaluacionDominio }: { score: number; summa
         {displayed}
       </p>
       <p className="text-xs mt-1 mb-1" style={{ color: "rgba(237,233,254,0.35)" }}>/ 100</p>
+      {typeof diferenciaVsPromedio === "number" && <ComparativaHistorica diferencia={diferenciaVsPromedio} />}
       {evaluacionDominio && <ScoreBreakdown evaluacionDominio={evaluacionDominio} />}
       <div className="gradient-sep" />
       <p className="text-sm mt-4 max-w-sm mx-auto leading-relaxed" style={{ color: "rgba(237,233,254,0.65)" }}>
@@ -348,7 +371,12 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
 
       {/* Score */}
       <Section delay={80}>
-        <ScoreCard score={result.score} summary={result.summary} evaluacionDominio={result.evaluacionDominio} />
+        <ScoreCard
+          score={result.score}
+          summary={result.summary}
+          evaluacionDominio={result.evaluacionDominio}
+          diferenciaVsPromedio={result.diferenciaVsPromedio}
+        />
       </Section>
 
       {/* Phases */}

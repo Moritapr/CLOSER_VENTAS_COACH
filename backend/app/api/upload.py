@@ -7,6 +7,8 @@ from app.core.auth import get_current_user_id
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
+GROQ_MAX_BYTES = 25 * 1024 * 1024  # límite real de Groq para transcripción
+
 # content_type -> file extension for temp file naming
 CONTENT_TYPE_EXT = {
     "audio/mpeg": "mp3",  "audio/mp3":  "mp3",
@@ -38,8 +40,12 @@ def to_mp3(audio_bytes: bytes, content_type: str, filename: str) -> tuple[bytes,
 
         tmp_out = tmp_in.rsplit(".", 1)[0] + "_out.mp3"
 
+        # Mono, 16kHz, 32kbps: de sobra para inteligibilidad de voz en
+        # transcripción, muy por debajo de la calidad musical que usaba
+        # -q:a 2 (~170-210kbps) y que hacía que llamadas largas superaran
+        # el límite de 25MB de Groq sin necesidad.
         result = subprocess.run(
-            ["ffmpeg", "-y", "-i", tmp_in, "-acodec", "libmp3lame", "-q:a", "2", tmp_out],
+            ["ffmpeg", "-y", "-i", tmp_in, "-acodec", "libmp3lame", "-ac", "1", "-ar", "16000", "-b:a", "32k", tmp_out],
             capture_output=True,
             timeout=300,
         )
@@ -84,6 +90,13 @@ async def subir_audio(archivo: UploadFile = File(...), user_id: str = Depends(ge
         archivo.filename or "audio.mp3",
     )
     print(f"MP3 GENERADO: {len(mp3_bytes)} bytes, nombre={mp3_nombre}")
+
+    if len(mp3_bytes) > GROQ_MAX_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="Esta grabación es demasiado larga para procesarla. El límite aproximado es de 2 "
+                   "horas. Intenta con una llamada más corta o divide la grabación.",
+        )
 
     resultado = await transcribir(mp3_bytes, mp3_nombre)
 

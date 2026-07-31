@@ -82,6 +82,18 @@ function authHeaders(token: string | undefined): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+// El backend manda errores claros en detail (FastAPI HTTPException) — los
+// mostramos tal cual en vez del genérico "rechazó el archivo (500)".
+async function mensajeDeError(res: Response, fallback: string): Promise<string> {
+  try {
+    const body = await res.json()
+    if (body && typeof body.detail === "string" && body.detail.trim()) return body.detail
+  } catch {
+    // El cuerpo no era JSON — nos quedamos con el mensaje genérico.
+  }
+  return fallback
+}
+
 function firstName(user: { user_metadata?: { full_name?: string }; email?: string }): string {
   const fullName = user.user_metadata?.full_name?.trim()
   if (fullName) return fullName.split(/\s+/)[0]
@@ -210,7 +222,9 @@ export function App() {
         body: form,
       })
       if (uploadRes.status === 401) { handleSessionExpired(); return }
-      if (!uploadRes.ok) throw new Error(`El servidor rechazó el archivo (${uploadRes.status}).`)
+      if (!uploadRes.ok) {
+        throw new Error(await mensajeDeError(uploadRes, `El servidor rechazó el archivo (${uploadRes.status}).`))
+      }
       const { transcripcion, duracion_segundos } = await uploadRes.json()
 
       // Step 2: analyze transcription
@@ -220,7 +234,9 @@ export function App() {
         body: JSON.stringify({ transcripcion, nombre_archivo: file.name, duracion_segundos }),
       })
       if (analyzeRes.status === 401) { handleSessionExpired(); return }
-      if (!analyzeRes.ok) throw new Error(`Error al analizar la llamada (${analyzeRes.status}).`)
+      if (!analyzeRes.ok) {
+        throw new Error(await mensajeDeError(analyzeRes, `Error al analizar la llamada (${analyzeRes.status}).`))
+      }
       const {
         analisis: analysis,
         promedio_historico,
@@ -242,7 +258,15 @@ export function App() {
       setState("done")
     } catch (err) {
       console.error("[API]", err)
-      setApiError(err instanceof Error ? err.message : "No se pudo conectar con el servidor.")
+      // fetch() rechaza con TypeError cuando falla la red (o el servidor
+      // corta la conexión en una subida larga) — "Failed to fetch" no le
+      // dice nada al usuario. Los errores que lanzamos nosotros arriba
+      // (con el mensaje real del backend) son Error, no TypeError.
+      if (err instanceof TypeError) {
+        setApiError("La conexión se interrumpió. Si la llamada es muy larga, puede tardar varios minutos — intenta de nuevo.")
+      } else {
+        setApiError(err instanceof Error ? err.message : "No se pudo conectar con el servidor.")
+      }
       setState("idle")
     }
   }

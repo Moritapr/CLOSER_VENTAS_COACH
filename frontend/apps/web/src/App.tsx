@@ -125,7 +125,7 @@ const EMPTY_PATRONES: PatronesData = {
 }
 
 export function App() {
-  const { isAuthenticated, login, logout } = useAuth()
+  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth()
   const [tab, setTab] = useState<Tab>("analizar")
   const [state, setState] = useState<AppState>("idle")
   const [fileName, setFileName] = useState("")
@@ -202,8 +202,16 @@ export function App() {
     setApiError(null)
   }
 
-  if (!isAuthenticated) {
-    return <LoginScreen onLogin={login} />
+  if (authLoading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "rgba(237,233,254,0.38)", fontSize: 14 }}>Verificando sesión...</p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LoginScreen onSignInWithGoogle={signInWithGoogle} />
   }
 
   return (
@@ -251,8 +259,23 @@ export function App() {
                 {t === "analizar" ? "Analizar" : "Dashboard"}
               </button>
             ))}
+            {user.user_metadata?.avatar_url && (
+              <img
+                src={user.user_metadata.avatar_url}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="h-6 w-6 rounded-full ml-1"
+                style={{ border: "1px solid rgba(139,92,246,0.3)" }}
+              />
+            )}
+            <span
+              className="hidden sm:inline text-xs max-w-[140px] truncate"
+              style={{ color: "rgba(237,233,254,0.42)" }}
+            >
+              {user.user_metadata?.full_name || user.email}
+            </span>
             <button
-              onClick={logout}
+              onClick={signOut}
               className="ml-1 text-xs px-2 py-1 rounded-lg transition-all duration-200"
               style={{ color: "rgba(237,233,254,0.3)" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(237,233,254,0.7)" }}

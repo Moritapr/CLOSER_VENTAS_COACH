@@ -112,7 +112,7 @@ const GLASS = {
   background: "rgba(255, 255, 255, 0.03)",
   backdropFilter: "blur(24px)",
   WebkitBackdropFilter: "blur(24px)",
-  border: "1px solid rgba(139, 92, 246, 0.18)",
+  border: "1px solid rgba(217, 119, 6, 0.18)",
   borderRadius: "16px",
 } as const
 
@@ -203,7 +203,7 @@ function EvolutionTrack<T extends string>({
         return (
           <div key={i} className="flex items-start" style={{ flex: i < levels.length - 1 ? 1 : "0 0 auto" }}>
             <div className="flex flex-col items-center gap-1.5 shrink-0" style={{ width: 68 }}>
-              <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "rgba(237,233,254,0.35)" }}>
+              <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "rgba(245,237,224,0.35)" }}>
                 {stepNames[i]}
               </span>
               <div
@@ -235,10 +235,10 @@ function EvolutionCard<T extends string>({
 }) {
   return (
     <div className="p-5 space-y-4" style={GLASS}>
-      <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>{title}</p>
+      <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>{title}</p>
       <div className="gradient-sep" />
       <EvolutionTrack levels={levels} styles={styles} />
-      <p className="text-xs leading-relaxed" style={{ color: "rgba(237,233,254,0.55)" }}>{observacion}</p>
+      <p className="text-xs leading-relaxed" style={{ color: "rgba(245,237,224,0.55)" }}>{observacion}</p>
     </div>
   )
 }
@@ -265,7 +265,7 @@ function ScoreBreakdown({ evaluacionDominio }: { evaluacionDominio: EvaluacionDo
           className="flex items-center justify-between gap-3 text-xs rounded-lg px-3 py-1.5"
           style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}
         >
-          <span style={{ color: "rgba(237,233,254,0.65)" }}>{p.label}</span>
+          <span style={{ color: "rgba(245,237,224,0.65)" }}>{p.label}</span>
           <span className="font-bold shrink-0" style={{ color: "#f87171" }}>−{p.weight}</span>
         </div>
       ))}
@@ -301,12 +301,12 @@ function ScoreCard({
       className="p-6 text-center"
       style={{
         ...GLASS,
-        background: `radial-gradient(ellipse 70% 60% at 50% 50%, rgba(139,92,246,0.12) 0%, rgba(255,255,255,0.02) 100%)`,
-        boxShadow: `0 0 60px rgba(139,92,246,0.30), 0 0 120px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.07)`,
-        border: "1px solid rgba(139, 92, 246, 0.30)",
+        background: `radial-gradient(ellipse 70% 60% at 50% 50%, rgba(217,119,6,0.12) 0%, rgba(255,255,255,0.02) 100%)`,
+        boxShadow: `0 0 60px rgba(217,119,6,0.30), 0 0 120px rgba(217,119,6,0.12), inset 0 1px 0 rgba(255,255,255,0.07)`,
+        border: "1px solid rgba(217, 119, 6, 0.30)",
       }}
     >
-      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(237,233,254,0.5)" }}>
+      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(245,237,224,0.5)" }}>
         Score general
       </p>
       <p
@@ -320,11 +320,11 @@ function ScoreCard({
       >
         {displayed}
       </p>
-      <p className="text-xs mt-1 mb-1" style={{ color: "rgba(237,233,254,0.35)" }}>/ 100</p>
+      <p className="text-xs mt-1 mb-1" style={{ color: "rgba(245,237,224,0.35)" }}>/ 100</p>
       {typeof diferenciaVsPromedio === "number" && <ComparativaHistorica diferencia={diferenciaVsPromedio} />}
       {evaluacionDominio && <ScoreBreakdown evaluacionDominio={evaluacionDominio} />}
       <div className="gradient-sep" />
-      <p className="text-sm mt-4 max-w-sm mx-auto leading-relaxed" style={{ color: "rgba(237,233,254,0.65)" }}>
+      <p className="text-sm mt-4 max-w-sm mx-auto leading-relaxed" style={{ color: "rgba(245,237,224,0.65)" }}>
         {summary}
       </p>
     </div>
@@ -339,8 +339,8 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       <Section delay={0}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-1">
-            <h2 className="text-xl font-black" style={{ color: "#ede9fe" }}>Resultado del análisis</h2>
-            <p className="text-sm" style={{ color: "rgba(237,233,254,0.42)" }}>
+            <h2 className="text-xl font-black" style={{ color: "#f5ede0" }}>Resultado del análisis</h2>
+            <p className="text-sm" style={{ color: "rgba(245,237,224,0.42)" }}>
               {fileName} · {result.duration}
             </p>
             {result.resultado && (
@@ -359,9 +359,9 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
             onClick={onReset}
             className="rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200"
             style={{
-              background: "rgba(139,92,246,0.12)",
-              border: "1px solid rgba(139,92,246,0.25)",
-              color: "#c4b5fd",
+              background: "rgba(217,119,6,0.12)",
+              border: "1px solid rgba(217,119,6,0.25)",
+              color: "#fcd34d",
             }}
           >
             Analizar otra llamada
@@ -382,7 +382,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       {/* Phases */}
       <Section delay={180}>
         <div className="p-5 space-y-4" style={GLASS}>
-          <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Las 7 fases del script IUL</p>
+          <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Las 7 fases del script IUL</p>
           <div className="gradient-sep" />
           <div className="space-y-4">
             {result.phases.map((phase, i) => (
@@ -399,10 +399,10 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                 </span>
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold" style={{ color: "#ede9fe" }}>{phase.name}</p>
+                    <p className="text-sm font-semibold" style={{ color: "#f5ede0" }}>{phase.name}</p>
                     <AnimatedPhaseBar passed={phase.passed} delay={250 + i * 80} />
                   </div>
-                  <p className="text-xs" style={{ color: "rgba(237,233,254,0.42)" }}>{phase.feedback}</p>
+                  <p className="text-xs" style={{ color: "rgba(245,237,224,0.42)" }}>{phase.feedback}</p>
                   {hasText(phase.queDebioDecir) && (
                     <div className="mt-1.5 rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
                       <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
@@ -438,7 +438,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
               <div className="gradient-sep" style={{ background: `linear-gradient(to right, transparent, ${color}55, transparent)` }} />
               <ul className="space-y-2">
                 {items.map((s) => (
-                  <li key={s} className="text-sm flex items-start gap-2" style={{ color: "rgba(237,233,254,0.72)" }}>
+                  <li key={s} className="text-sm flex items-start gap-2" style={{ color: "rgba(245,237,224,0.72)" }}>
                     <span className="shrink-0 mt-0.5 font-bold" style={{ color }}>{symbol}</span>
                     {s}
                   </li>
@@ -453,7 +453,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       {result.objeciones && result.objeciones.length > 0 && (
         <Section delay={360}>
           <div className="p-5 space-y-4" style={GLASS}>
-            <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Objeciones detectadas</p>
+            <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Objeciones detectadas</p>
             <div className="gradient-sep" />
             <div className="space-y-4">
               {result.objeciones.map((obj, i) => (
@@ -461,10 +461,10 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                   <p className="text-xs font-semibold" style={{ color: "#f87171" }}>
                     "{obj.objecion}"
                   </p>
-                  <div className="pl-3 border-l-2 space-y-1.5" style={{ borderColor: "rgba(139,92,246,0.3)" }}>
+                  <div className="pl-3 border-l-2 space-y-1.5" style={{ borderColor: "rgba(217,119,6,0.3)" }}>
                     <div>
-                      <p className="text-xs font-medium" style={{ color: "rgba(237,233,254,0.45)" }}>Lo que dijiste:</p>
-                      <p className="text-xs" style={{ color: "rgba(237,233,254,0.65)" }}>{obj.respuestaDada}</p>
+                      <p className="text-xs font-medium" style={{ color: "rgba(245,237,224,0.45)" }}>Lo que dijiste:</p>
+                      <p className="text-xs" style={{ color: "rgba(245,237,224,0.65)" }}>{obj.respuestaDada}</p>
                     </div>
                     {hasText(obj.queDebioDecir) && (
                       <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
@@ -484,13 +484,13 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       {result.mapaFriccion && result.mapaFriccion.length > 0 && (
         <Section delay={440}>
           <div className="p-5 space-y-4" style={GLASS}>
-            <p className="font-bold text-sm" style={{ color: "#ede9fe" }}>Mapa de fricción</p>
+            <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Mapa de fricción</p>
             <div className="gradient-sep" />
             <div className="space-y-4">
               {result.mapaFriccion.map((momento, i) => (
                 <div key={i} className="space-y-2">
                   <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <p className="text-xs font-semibold flex-1 min-w-[140px]" style={{ color: "rgba(237,233,254,0.85)" }}>
+                    <p className="text-xs font-semibold flex-1 min-w-[140px]" style={{ color: "rgba(245,237,224,0.85)" }}>
                       "{momento.fragmento}"
                     </p>
                     <span
@@ -504,7 +504,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                       {FRICCION_TIPO_STYLES[momento.tipo]?.label ?? momento.tipo}
                     </span>
                   </div>
-                  <p className="text-xs" style={{ color: "rgba(237,233,254,0.55)" }}>{momento.explicacion}</p>
+                  <p className="text-xs" style={{ color: "rgba(245,237,224,0.55)" }}>{momento.explicacion}</p>
                   {hasText(momento.queHacer) && (
                     <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
                       <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Qué hacer:</p>

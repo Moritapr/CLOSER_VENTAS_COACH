@@ -41,34 +41,34 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
         opacity: disabled ? 0.5 : 1,
         transition: "all 0.25s ease",
         background: dragging
-          ? "rgba(124, 58, 237, 0.12)"
+          ? "rgba(217, 119, 6, 0.12)"
           : "rgba(255, 255, 255, 0.025)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         border: dragging
-          ? "2px dashed rgba(167, 139, 250, 0.7)"
-          : "2px dashed rgba(139, 92, 246, 0.25)",
+          ? "2px dashed rgba(251, 191, 36, 0.7)"
+          : "2px dashed rgba(217, 119, 6, 0.25)",
         boxShadow: dragging
-          ? "0 0 60px rgba(124, 58, 237, 0.25), inset 0 0 40px rgba(124, 58, 237, 0.05)"
-          : "0 0 20px rgba(139, 92, 246, 0.08)",
+          ? "0 0 60px rgba(217, 119, 6, 0.25), inset 0 0 40px rgba(217, 119, 6, 0.05)"
+          : "0 0 20px rgba(217, 119, 6, 0.08)",
       }}
     >
       {/* Icon */}
       <div
         className="flex h-20 w-20 items-center justify-center rounded-2xl"
         style={{
-          background: "linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.2))",
-          border: "1px solid rgba(139, 92, 246, 0.3)",
-          boxShadow: "0 0 30px rgba(124, 58, 237, 0.2)",
+          background: "linear-gradient(135deg, rgba(217,119,6,0.3), rgba(180,83,9,0.2))",
+          border: "1px solid rgba(217, 119, 6, 0.3)",
+          boxShadow: "0 0 30px rgba(217, 119, 6, 0.2)",
         }}
       >
-        <Mic size={36} color="#a78bfa" strokeWidth={1.5} />
+        <Mic size={36} color="#fbbf24" strokeWidth={1.5} />
       </div>
 
       {/* Text */}
       <div className="space-y-1">
-        <p className="text-lg font-bold" style={{ color: "#ede9fe" }}>Sube tu grabación</p>
-        <p className="text-sm" style={{ color: "rgba(237,233,254,0.45)" }}>
+        <p className="text-lg font-bold" style={{ color: "#f5ede0" }}>Sube tu grabación</p>
+        <p className="text-sm" style={{ color: "rgba(245,237,224,0.45)" }}>
           Arrastra un archivo de audio o haz clic para seleccionar
         </p>
       </div>
@@ -78,9 +78,9 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
         disabled={disabled}
         className="rounded-xl px-6 py-2.5 text-sm font-semibold transition-all duration-200"
         style={{
-          background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+          background: "linear-gradient(135deg, #d97706, #b45309)",
           color: "#fff",
-          boxShadow: "0 0 25px rgba(124,58,237,0.35)",
+          boxShadow: "0 0 25px rgba(217,119,6,0.35)",
           border: "none",
           cursor: disabled ? "not-allowed" : "pointer",
         }}
@@ -88,7 +88,7 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
         Seleccionar archivo
       </button>
 
-      <p className="text-xs" style={{ color: "rgba(237,233,254,0.3)" }}>MP3, WAV, M4A, MP4, OGG</p>
+      <p className="text-xs" style={{ color: "rgba(245,237,224,0.3)" }}>MP3, WAV, M4A, MP4, OGG</p>
 
       <input ref={inputRef} type="file" accept="audio/*,video/mp4" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}

@@ -109,16 +109,16 @@ export function LiquidButton({
           filter: active ? `url(#${filterId})` : undefined,
           // Glass gradient background
           background: active
-            ? "linear-gradient(140deg, rgba(147,51,234,0.90) 0%, rgba(79,70,229,0.90) 100%)"
-            : "rgba(139,92,246,0.18)",
+            ? "linear-gradient(140deg, rgba(217,119,6,0.90) 0%, rgba(180,83,9,0.90) 100%)"
+            : "rgba(217,119,6,0.18)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
           boxShadow: active
             ? [
                 "inset 0 1px 0 rgba(255,255,255,0.28)",
                 "inset 0 -1px 0 rgba(0,0,0,0.18)",
-                "0 0 32px rgba(124,58,237,0.50)",
-                "0 0 70px rgba(124,58,237,0.20)",
+                "0 0 32px rgba(217,119,6,0.50)",
+                "0 0 70px rgba(217,119,6,0.20)",
               ].join(", ")
             : "inset 0 1px 0 rgba(255,255,255,0.06)",
           transition: [
@@ -151,7 +151,7 @@ export function LiquidButton({
             fontSize: 14,
             fontWeight: 700,
             letterSpacing: "0.02em",
-            color: active ? "#fff" : "rgba(237,233,254,0.35)",
+            color: active ? "#fff" : "rgba(245,237,224,0.35)",
           }}
         >
           {children}

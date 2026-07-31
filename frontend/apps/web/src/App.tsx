@@ -242,7 +242,7 @@ export function App() {
   if (authLoading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "rgba(237,233,254,0.38)", fontSize: 14 }}>Verificando sesión...</p>
+        <p style={{ color: "rgba(245,237,224,0.38)", fontSize: 14 }}>Verificando sesión...</p>
       </div>
     )
   }
@@ -257,18 +257,18 @@ export function App() {
       <header
         className="sticky top-0 z-10"
         style={{
-          background: "rgba(7, 5, 14, 0.72)",
+          background: "rgba(12, 10, 9, 0.72)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          borderBottom: "1px solid rgba(139, 92, 246, 0.15)",
+          borderBottom: "1px solid rgba(217, 119, 6, 0.15)",
         }}
       >
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <Logo size={32} />
-            <span className="sm:hidden font-black text-sm tracking-tight" style={{ color: "#ede9fe" }}>CVC</span>
-            <span className="hidden sm:inline font-black text-sm tracking-tight" style={{ color: "#ede9fe" }}>Closer Ventas Coach</span>
+            <span className="sm:hidden font-black text-sm tracking-tight" style={{ color: "#f5ede0" }}>CVC</span>
+            <span className="hidden sm:inline font-black text-sm tracking-tight" style={{ color: "#f5ede0" }}>Closer Ventas Coach</span>
           </div>
 
           {/* Tabs + logout */}
@@ -279,10 +279,10 @@ export function App() {
                 onClick={() => setTab(t)}
                 className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200"
                 style={{
-                  background: tab === t ? "rgba(139,92,246,0.2)" : "transparent",
-                  color: tab === t ? "#c4b5fd" : "rgba(237,233,254,0.45)",
-                  border: tab === t ? "1px solid rgba(139,92,246,0.3)" : "1px solid transparent",
-                  boxShadow: tab === t ? "0 0 15px rgba(139,92,246,0.2)" : undefined,
+                  background: tab === t ? "rgba(217,119,6,0.2)" : "transparent",
+                  color: tab === t ? "#fcd34d" : "rgba(245,237,224,0.45)",
+                  border: tab === t ? "1px solid rgba(217,119,6,0.3)" : "1px solid transparent",
+                  boxShadow: tab === t ? "0 0 15px rgba(217,119,6,0.2)" : undefined,
                 }}
               >
                 {t === "analizar" ? "Analizar" : "Dashboard"}
@@ -294,21 +294,21 @@ export function App() {
                 alt=""
                 referrerPolicy="no-referrer"
                 className="h-6 w-6 rounded-full ml-1"
-                style={{ border: "1px solid rgba(139,92,246,0.3)" }}
+                style={{ border: "1px solid rgba(217,119,6,0.3)" }}
               />
             )}
             <span
               className="hidden sm:inline text-xs max-w-[140px] truncate"
-              style={{ color: "rgba(237,233,254,0.42)" }}
+              style={{ color: "rgba(245,237,224,0.42)" }}
             >
               {user.user_metadata?.full_name || user.email}
             </span>
             <button
               onClick={signOut}
               className="ml-1 text-xs px-2 py-1 rounded-lg transition-all duration-200"
-              style={{ color: "rgba(237,233,254,0.3)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(237,233,254,0.7)" }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(237,233,254,0.3)" }}
+              style={{ color: "rgba(245,237,224,0.3)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(245,237,224,0.7)" }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(245,237,224,0.3)" }}
             >
               Salir
             </button>
@@ -352,7 +352,7 @@ export function App() {
 
           {tab === "dashboard" && (
             dashboardLoading ? (
-              <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(237,233,254,0.38)", fontSize: 14 }}>
+              <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(245,237,224,0.38)", fontSize: 14 }}>
                 Cargando dashboard...
               </div>
             ) : (

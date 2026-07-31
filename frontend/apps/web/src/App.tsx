@@ -11,6 +11,7 @@ import {
   type EvaluacionDominio,
 } from "@/components/AnalysisReport"
 import { LoginScreen } from "@/components/LoginScreen"
+import { Logo } from "@/components/Logo"
 import { Dashboard, type DashboardData, type PatronesData } from "@/components/Dashboard"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -265,15 +266,7 @@ export function App() {
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div
-              className="h-7 w-7 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", boxShadow: "0 0 12px rgba(124,58,237,0.5)" }}
-            >
-              <svg className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-              </svg>
-            </div>
+            <Logo size={32} />
             <span className="sm:hidden font-black text-sm tracking-tight" style={{ color: "#ede9fe" }}>CVC</span>
             <span className="hidden sm:inline font-black text-sm tracking-tight" style={{ color: "#ede9fe" }}>Closer Ventas Coach</span>
           </div>

@@ -1,5 +1,7 @@
 import { useState } from "react"
+import { ListChecks, AlertTriangle, MessageSquareText } from "lucide-react"
 import { WebGLShader } from "@/components/ui/web-gl-shader"
+import { Logo } from "@/components/Logo"
 
 interface LoginScreenProps {
   onSignInWithGoogle: () => void | Promise<void>
@@ -17,6 +19,51 @@ function GoogleIcon() {
   )
 }
 
+interface Beneficio {
+  icon: React.ReactNode
+  title: string
+  description: string
+}
+
+const BENEFICIOS: Beneficio[] = [
+  {
+    icon: <ListChecks size={17} color="#a78bfa" strokeWidth={1.8} />,
+    title: "Análisis de las 7 fases del script",
+    description: "Dónde estuviste bien y dónde no.",
+  },
+  {
+    icon: <AlertTriangle size={17} color="#a78bfa" strokeWidth={1.8} />,
+    title: "Mapa de fricción",
+    description: "El momento exacto donde el cliente se enfrió.",
+  },
+  {
+    icon: <MessageSquareText size={17} color="#a78bfa" strokeWidth={1.8} />,
+    title: "Frases listas para usar",
+    description: "Qué decir la próxima vez.",
+  },
+]
+
+function BeneficioRow({ icon, title, description }: Beneficio) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+      <div
+        style={{
+          width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(139,92,246,0.14)",
+          border: "1px solid rgba(139,92,246,0.28)",
+        }}
+      >
+        {icon}
+      </div>
+      <div>
+        <p style={{ color: "#ede9fe", fontSize: 13.5, fontWeight: 700, lineHeight: 1.35 }}>{title}</p>
+        <p style={{ color: "rgba(237,233,254,0.48)", fontSize: 12.5, lineHeight: 1.4, marginTop: 2 }}>{description}</p>
+      </div>
+    </div>
+  )
+}
+
 export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -29,7 +76,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
     try {
       await onSignInWithGoogle()
       // En el flujo normal, signInWithGoogle redirige el navegador a Google
-      // y este componente se desmonta. Si llegamos acá sin error, la
+      // y este componente se desmonta. Si llegamos hasta acá sin error, la
       // redirección no ocurrió — lo tratamos como falla para no dejar el
       // botón colgado en "Conectando...".
       setLoading(false)
@@ -40,53 +87,53 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
   }
 
   return (
-    <div style={{ position: "relative", zIndex: 10, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
+    <div style={{ position: "relative", zIndex: 10, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 16px" }}>
 
       {/* ── WebGL animated background ── */}
       <WebGLShader />
 
-      {/* ── Login card — sits above the shader ── */}
+      {/* ── Landing + login — sits above the shader ── */}
       <div
         className="animate-fade-slide-up"
         style={{
           position: "relative",
           zIndex: 10,
           width: "100%",
-          maxWidth: 360,
+          maxWidth: 420,
           display: "flex",
           flexDirection: "column",
-          gap: 32,
+          gap: 20,
         }}
       >
-        {/* Logo + title */}
-        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-          <div
+        {/* Wordmark */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+          <Logo size={36} />
+          <span style={{ color: "#ede9fe", fontSize: 15, fontWeight: 800, letterSpacing: "-0.01em" }}>
+            Closer Ventas Coach
+          </span>
+        </div>
+
+        {/* Headline + subhead */}
+        <div style={{ textAlign: "center" }}>
+          <h1
             style={{
-              width: 64, height: 64,
-              borderRadius: 20,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
-              boxShadow: "0 0 40px rgba(124,58,237,0.55), 0 0 80px rgba(124,58,237,0.25)",
+              fontSize: "clamp(22px, 5.5vw, 30px)",
+              fontWeight: 900,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.2,
+              background: "linear-gradient(135deg, #c4b5fd 0%, #818cf8 45%, #a78bfa 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              margin: 0,
             }}
           >
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
-          </div>
-
-          <div>
-            <h1 style={{
-              fontSize: 24, fontWeight: 900, letterSpacing: "-0.03em",
-              background: "linear-gradient(135deg, #c4b5fd, #818cf8, #a78bfa)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-              margin: 0,
-            }}>
-              Closer Ventas Coach
-            </h1>
-            <p style={{ color: "rgba(237,233,254,0.45)", fontSize: 13, marginTop: 4 }}>
-              Análisis de llamadas con IA
-            </p>
-          </div>
+            Deja de adivinar por qué no cerraste.
+          </h1>
+          <p style={{ color: "rgba(237,233,254,0.55)", fontSize: 14, lineHeight: 1.5, marginTop: 10 }}>
+            Sube la grabación de tu llamada. La IA te dice exactamente dónde perdiste
+            al cliente y qué debiste decir.
+          </p>
         </div>
 
         {sessionExpired && (
@@ -99,7 +146,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
             color: "#fbbf24",
             fontSize: 12.5,
           }}>
-            Tu sesión expiró. Volvé a iniciar sesión.
+            Tu sesión expiró. Vuelve a iniciar sesión.
           </div>
         )}
 
@@ -111,17 +158,22 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
             WebkitBackdropFilter: "blur(32px)",
             border: "1px solid rgba(139, 92, 246, 0.25)",
             borderRadius: 20,
-            padding: "28px 24px",
+            padding: "22px 22px 20px",
             boxShadow: "0 0 40px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.07)",
             display: "flex",
             flexDirection: "column",
-            gap: 20,
+            gap: 16,
           }}
         >
-          {/* Gradient separator */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {BENEFICIOS.map((b) => (
+              <BeneficioRow key={b.title} {...b} />
+            ))}
+          </div>
+
           <div className="gradient-sep" />
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button
               type="button"
               onClick={handleClick}
@@ -130,7 +182,7 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
               onMouseLeave={() => setBtnHover(false)}
               style={{
                 width: "100%",
-                height: 44,
+                height: 46,
                 borderRadius: 8,
                 border: "1px solid rgba(139, 92, 246, 0.22)",
                 cursor: loading ? "not-allowed" : "pointer",
@@ -152,9 +204,13 @@ export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenP
 
             {error && (
               <p style={{ color: "#f87171", fontSize: 12, textAlign: "center" }}>
-                No pudimos conectar con Google. Intentá de nuevo.
+                No pudimos conectar con Google. Intenta de nuevo.
               </p>
             )}
+
+            <p style={{ color: "rgba(237,233,254,0.32)", fontSize: 11, textAlign: "center" }}>
+              Tus grabaciones son privadas y solo tú las ves.
+            </p>
           </div>
         </div>
       </div>

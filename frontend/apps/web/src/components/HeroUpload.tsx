@@ -178,7 +178,7 @@ export function HeroUpload({ onFileSelect }: HeroUploadProps) {
           Tu próximo cierre<br />empieza aquí
         </h1>
         <p style={{ color: "rgba(237,233,254,0.42)", fontSize: 14, lineHeight: 1.6 }}>
-          Subí tu grabación · La IA analiza · Vos mejorás
+          Sube tu grabación · La IA analiza · Tú mejoras
         </p>
       </div>
 
@@ -221,7 +221,7 @@ export function HeroUpload({ onFileSelect }: HeroUploadProps) {
           <FloatingWidget
             icon={<TrendIcon />}
             title="Mejora semana a semana"
-            subtitle="Seguí tu progreso en el dashboard"
+            subtitle="Sigue tu progreso en el dashboard"
             delay={400}
           />
         </div>

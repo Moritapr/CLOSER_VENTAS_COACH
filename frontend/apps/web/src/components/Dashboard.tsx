@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { TrendingUp } from "lucide-react"
+import { TrendingUp, ArrowUp, ArrowDown, Minus } from "lucide-react"
 import { DOMINIO_PENALTIES } from "@/components/AnalysisReport"
 
 export interface PatronRepetido {
@@ -98,6 +98,35 @@ function ScorePill({ score }: { score: number }) {
       </div>
       <span className="text-xs font-bold tabular-nums w-6 text-right" style={{ color }}>{score}</span>
     </div>
+  )
+}
+
+// Compara contra la llamada anterior (cronológicamente) — data.calls viene
+// ordenado más reciente primero, así que "anterior" es null solo cuando es
+// la primera llamada que el usuario analizó.
+function TrendIndicator({ current, previous }: { current: number; previous: number | null }) {
+  if (previous === null) {
+    return (
+      <span className="flex items-center justify-center shrink-0" style={{ width: 34, color: "rgba(245,237,224,0.25)" }}>
+        <Minus size={13} strokeWidth={2.5} />
+      </span>
+    )
+  }
+  const diff = current - previous
+  if (diff === 0) {
+    return (
+      <span className="flex items-center justify-center shrink-0" style={{ width: 34, color: "rgba(245,237,224,0.25)" }}>
+        <Minus size={13} strokeWidth={2.5} />
+      </span>
+    )
+  }
+  const subio = diff > 0
+  const color = subio ? "#34d399" : "#f87171"
+  return (
+    <span className="flex items-center justify-center gap-0.5 shrink-0 text-xs font-bold tabular-nums" style={{ width: 34, color }}>
+      {subio ? <ArrowUp size={12} strokeWidth={2.5} /> : <ArrowDown size={12} strokeWidth={2.5} />}
+      {Math.abs(diff)}
+    </span>
   )
 }
 
@@ -303,11 +332,11 @@ export function Dashboard({ data, patrones, onViewCall, onGoToAnalyze }: Dashboa
           </p>
         ) : (
           <div className="space-y-2">
-            {data.calls.map((call) => (
+            {data.calls.map((call, i) => (
               <button
                 key={call.id}
                 onClick={() => onViewCall(call.id)}
-                className="w-full text-left rounded-xl p-3 transition-all duration-200"
+                className="w-full text-left rounded-xl p-3 transition-all duration-200 cursor-pointer"
                 style={{
                   background: "rgba(217,119,6,0.06)",
                   border: "1px solid rgba(217,119,6,0.12)",
@@ -327,14 +356,17 @@ export function Dashboard({ data, patrones, onViewCall, onGoToAnalyze }: Dashboa
                   el.style.boxShadow = ""
                 }}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold truncate" style={{ color: "#f5ede0" }}>{call.fileName}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "rgba(245,237,224,0.38)" }}>
+                    <p className="text-xs mt-0.5 truncate" style={{ color: "rgba(245,237,224,0.38)" }}>
                       {call.date} · {call.duration} · Falla: {call.weakestPhase}
                     </p>
                   </div>
-                  <ScorePill score={call.score} />
+                  <div className="flex items-center gap-1 shrink-0">
+                    <TrendIndicator current={call.score} previous={data.calls[i + 1]?.score ?? null} />
+                    <ScorePill score={call.score} />
+                  </div>
                 </div>
               </button>
             ))}

@@ -364,6 +364,7 @@ export function App() {
                 data={dashboardData}
                 patrones={patronesData}
                 onViewCall={(id) => console.log("view call", id)}
+                onGoToAnalyze={() => setTab("analizar")}
               />
             )
           )}

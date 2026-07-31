@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { TrendingUp } from "lucide-react"
 import { DOMINIO_PENALTIES } from "@/components/AnalysisReport"
 
 export interface PatronRepetido {
@@ -33,6 +34,7 @@ interface DashboardProps {
   data: DashboardData
   patrones: PatronesData
   onViewCall: (id: string) => void
+  onGoToAnalyze: () => void
 }
 
 const GLASS = {
@@ -135,7 +137,55 @@ function WeeklyChart({ data }: { data: { label: string; score: number }[] }) {
   )
 }
 
-export function Dashboard({ data, patrones, onViewCall }: DashboardProps) {
+// Estado vacío global — reemplaza el dashboard entero cuando el usuario
+// todavía no tiene llamadas analizadas, en vez de mostrar cada sección
+// (patrones, fases, objeciones, historial) vacía por separado.
+function EmptyDashboard({ onGoToAnalyze }: { onGoToAnalyze: () => void }) {
+  return (
+    <div className="p-10 text-center space-y-5" style={{ ...GLASS, boxShadow: "0 0 40px rgba(217,119,6,0.1)" }}>
+      <div
+        className="mx-auto flex items-center justify-center"
+        style={{
+          width: 64, height: 64, borderRadius: 20,
+          background: "linear-gradient(135deg, rgba(217,119,6,0.25), rgba(180,83,9,0.15))",
+          border: "1px solid rgba(217,119,6,0.3)",
+          boxShadow: "0 0 30px rgba(217,119,6,0.2)",
+        }}
+      >
+        <TrendingUp size={28} color="#fbbf24" strokeWidth={1.7} />
+      </div>
+      <div className="space-y-1.5">
+        <p className="font-black text-lg" style={{ color: "#f5ede0" }}>Aquí verás tu progreso</p>
+        <p className="text-sm max-w-sm mx-auto leading-relaxed" style={{ color: "rgba(245,237,224,0.5)" }}>
+          Score por semana, las fases donde más fallás, tus objeciones frecuentes y el
+          historial de cada llamada — todo va a aparecer acá apenas analices tu primera grabación.
+        </p>
+      </div>
+      <button
+        onClick={onGoToAnalyze}
+        className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200"
+        style={{
+          background: "linear-gradient(135deg, #d97706, #b45309)",
+          color: "#fff",
+          boxShadow: "0 0 25px rgba(217,119,6,0.35)",
+          border: "none",
+        }}
+      >
+        Analizar mi primera llamada
+      </button>
+    </div>
+  )
+}
+
+export function Dashboard({ data, patrones, onViewCall, onGoToAnalyze }: DashboardProps) {
+  if (data.calls.length === 0) {
+    return (
+      <div className="animate-fade-slide-up">
+        <EmptyDashboard onGoToAnalyze={onGoToAnalyze} />
+      </div>
+    )
+  }
+
   const avgScore = data.calls.length
     ? Math.round(data.calls.reduce((a, c) => a + c.score, 0) / data.calls.length)
     : 0

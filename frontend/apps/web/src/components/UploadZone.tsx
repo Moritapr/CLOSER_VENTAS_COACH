@@ -69,9 +69,9 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
 
       {/* Text */}
       <div className="space-y-1">
-        <p className="text-lg font-bold" style={{ color: "#ede9fe" }}>Subí tu grabación</p>
+        <p className="text-lg font-bold" style={{ color: "#ede9fe" }}>Sube tu grabación</p>
         <p className="text-sm" style={{ color: "rgba(237,233,254,0.45)" }}>
-          Arrastrá un archivo de audio o hacé clic para seleccionar
+          Arrastra un archivo de audio o haz clic para seleccionar
         </p>
       </div>
 

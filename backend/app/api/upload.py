@@ -1,8 +1,9 @@
 import os
 import subprocess
 import tempfile
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from app.services.transcripcion import transcribir
+from app.core.auth import get_current_user_id
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
@@ -73,7 +74,7 @@ def to_mp3(audio_bytes: bytes, content_type: str, filename: str) -> tuple[bytes,
 
 
 @router.post("/upload")
-async def subir_audio(archivo: UploadFile = File(...)):
+async def subir_audio(archivo: UploadFile = File(...), user_id: str = Depends(get_current_user_id)):
     contenido = await archivo.read()
     print(f"ARCHIVO RECIBIDO: {len(contenido)} bytes, content_type={archivo.content_type}, filename={archivo.filename}")
 

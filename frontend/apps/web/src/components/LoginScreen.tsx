@@ -3,6 +3,7 @@ import { WebGLShader } from "@/components/ui/web-gl-shader"
 
 interface LoginScreenProps {
   onSignInWithGoogle: () => void | Promise<void>
+  sessionExpired?: boolean
 }
 
 function GoogleIcon() {
@@ -16,7 +17,7 @@ function GoogleIcon() {
   )
 }
 
-export function LoginScreen({ onSignInWithGoogle }: LoginScreenProps) {
+export function LoginScreen({ onSignInWithGoogle, sessionExpired }: LoginScreenProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [btnHover, setBtnHover] = useState(false)
@@ -87,6 +88,20 @@ export function LoginScreen({ onSignInWithGoogle }: LoginScreenProps) {
             </p>
           </div>
         </div>
+
+        {sessionExpired && (
+          <div style={{
+            textAlign: "center",
+            padding: "10px 14px",
+            borderRadius: 12,
+            background: "rgba(251,191,36,0.08)",
+            border: "1px solid rgba(251,191,36,0.25)",
+            color: "#fbbf24",
+            fontSize: 12.5,
+          }}>
+            Tu sesión expiró. Volvé a iniciar sesión.
+          </div>
+        )}
 
         {/* Glass card */}
         <div

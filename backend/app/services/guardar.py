@@ -1,11 +1,18 @@
 from app.db.supabase import supabase
 
 
-async def calcular_comparativa_historica(puntaje_actual: int) -> dict:
+async def calcular_comparativa_historica(puntaje_actual: int, user_id: str) -> dict:
     # Se llama ANTES de insertar la llamada actual, así el promedio nunca
     # se cuenta a sí mismo — sin importar si guardar_analisis termina
     # insertando una fila nueva o devolviendo un duplicado existente.
-    res = supabase.table("analisis").select("puntaje_general").execute()
+    # Filtrado por user_id: el backend usa la service_role key, que salta
+    # RLS, así que el filtro tiene que estar acá en el código.
+    res = (
+        supabase.table("analisis")
+        .select("puntaje_general")
+        .eq("user_id", user_id)
+        .execute()
+    )
     puntajes = [
         row["puntaje_general"] for row in (res.data or [])
         if row.get("puntaje_general") is not None
@@ -30,12 +37,14 @@ async def calcular_comparativa_historica(puntaje_actual: int) -> dict:
 async def guardar_analisis(
     transcripcion: str,
     analisis: dict,
+    user_id: str,
     nombre_archivo: str = None,
     duracion_segundos: float = None
 ) -> dict:
     fases = analisis.get("fases", {})
 
     registro = {
+        "user_id": user_id,
         "nombre_archivo": nombre_archivo,
         "duracion_segundos": duracion_segundos,
         "transcripcion": transcripcion,
@@ -72,6 +81,7 @@ async def guardar_analisis(
         existing = (
             supabase.table("analisis")
             .select("*")
+            .eq("user_id", user_id)
             .eq("nombre_archivo", nombre_archivo)
             .eq("duracion_segundos", duracion_segundos)
             .limit(1)

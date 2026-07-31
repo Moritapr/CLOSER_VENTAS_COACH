@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { ChevronDown, Check, X } from "lucide-react"
 import { useCountUp } from "@/hooks/useCountUp"
 
 export interface PhaseResult {
@@ -178,18 +179,62 @@ function Section({ children, delay = 0 }: { children: React.ReactNode; delay?: n
   )
 }
 
-function AnimatedPhaseBar({ passed, delay }: { passed: boolean; delay: number }) {
-  const [w, setW] = useState(0)
-  useEffect(() => { const t = setTimeout(() => setW(100), delay); return () => clearTimeout(t) }, [delay])
-  const color = passed ? "#34d399" : "#f87171"
+// Fase colapsable: por defecto solo se ve el título + indicador de si
+// estuvo bien o mal. Las que fallaron empiezan expandidas (son las que
+// importa leer); las que salieron bien quedan colapsadas para que el
+// reporte se pueda escanear en segundos.
+function PhaseAccordionItem({ phase, isLast }: { phase: PhaseResult; isLast: boolean }) {
+  const [open, setOpen] = useState(!phase.passed)
+  const hasDetail = hasText(phase.feedback) || hasText(phase.queDebioDecir)
+
   return (
-    <div style={{ height: 3, width: 56, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-      <div style={{
-        height: "100%", width: `${w}%`, borderRadius: 999,
-        background: color,
-        boxShadow: `0 0 8px ${color}88`,
-        transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
-      }} />
+    <div style={{ borderBottom: isLast ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
+      <button
+        type="button"
+        onClick={() => hasDetail && setOpen((o) => !o)}
+        className="w-full flex items-center gap-3 py-2.5 text-left"
+        style={{ background: "transparent", border: "none", padding: "10px 0", cursor: hasDetail ? "pointer" : "default" }}
+      >
+        <span
+          className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full"
+          style={{
+            background: phase.passed ? "rgba(52,211,153,0.15)" : "rgba(248,113,113,0.15)",
+            color: phase.passed ? "#34d399" : "#f87171",
+            border: `1px solid ${phase.passed ? "rgba(52,211,153,0.3)" : "rgba(248,113,113,0.3)"}`,
+          }}
+        >
+          {phase.passed ? <Check size={13} strokeWidth={3} /> : <X size={13} strokeWidth={3} />}
+        </span>
+        <span className="flex-1 text-sm font-semibold" style={{ color: "#f5ede0" }}>{phase.name}</span>
+        {hasDetail && (
+          <ChevronDown
+            size={16}
+            style={{
+              color: "rgba(245,237,224,0.35)",
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s ease",
+              flexShrink: 0,
+            }}
+          />
+        )}
+      </button>
+      {hasDetail && (
+        <div style={{ display: "grid", gridTemplateRows: open ? "1fr" : "0fr", transition: "grid-template-rows 0.25s ease" }}>
+          <div style={{ overflow: "hidden" }}>
+            <div className="pl-9 pb-3 space-y-1.5">
+              {hasText(phase.feedback) && (
+                <p className="text-xs" style={{ color: "rgba(245,237,224,0.42)" }}>{phase.feedback}</p>
+              )}
+              {hasText(phase.queDebioDecir) && (
+                <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                  <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
+                  <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{phase.queDebioDecir}"</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -240,10 +285,10 @@ function EvolutionCard<T extends string>({
 }) {
   return (
     <div className="p-5 space-y-4" style={GLASS}>
-      <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>{title}</p>
+      <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "rgba(245,237,224,0.5)" }}>{title}</p>
       <div className="gradient-sep" />
       <EvolutionTrack levels={levels} styles={styles} />
-      <p className="text-xs leading-relaxed" style={{ color: "rgba(245,237,224,0.55)" }}>{observacion}</p>
+      <p className="text-xs leading-relaxed" style={{ color: "rgba(245,237,224,0.5)" }}>{observacion}</p>
     </div>
   )
 }
@@ -303,12 +348,12 @@ function ScoreCard({
 
   return (
     <div
-      className="p-6 text-center"
+      className="p-8 text-center"
       style={{
         ...GLASS,
         background: `radial-gradient(ellipse 70% 60% at 50% 50%, rgba(217,119,6,0.12) 0%, rgba(255,255,255,0.02) 100%)`,
-        boxShadow: `0 0 60px rgba(217,119,6,0.30), 0 0 120px rgba(217,119,6,0.12), inset 0 1px 0 rgba(255,255,255,0.07)`,
-        border: "1px solid rgba(217, 119, 6, 0.30)",
+        boxShadow: `0 0 70px rgba(217,119,6,0.34), 0 0 140px rgba(217,119,6,0.14), inset 0 1px 0 rgba(255,255,255,0.07)`,
+        border: "1px solid rgba(217, 119, 6, 0.34)",
       }}
     >
       <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(245,237,224,0.5)" }}>
@@ -317,9 +362,9 @@ function ScoreCard({
       <p
         className="font-black tabular-nums leading-none"
         style={{
-          fontSize: 96,
+          fontSize: 108,
           color: scoreColor,
-          textShadow: `0 0 40px ${glowColor}80, 0 0 80px ${glowColor}40`,
+          textShadow: `0 0 40px ${glowColor}80, 0 0 90px ${glowColor}50`,
           lineHeight: 1,
         }}
       >
@@ -369,7 +414,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
 
       {/* Header */}
       <Section delay={0}>
@@ -415,38 +460,16 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
         />
       </Section>
 
-      {/* Phases */}
+      {/* Phases — colapsables: las que fallaron vienen abiertas por defecto */}
       <Section delay={180}>
-        <div className="p-5 space-y-4" style={GLASS}>
-          <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Las 7 fases del script IUL</p>
-          <div className="gradient-sep" />
-          <div className="space-y-4">
+        <div className="p-5" style={GLASS}>
+          <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "rgba(245,237,224,0.5)" }}>
+            Las 7 fases del script IUL
+          </p>
+          <div className="gradient-sep" style={{ margin: "12px 0" }} />
+          <div>
             {result.phases.map((phase, i) => (
-              <div key={phase.name} className="flex items-start gap-3">
-                <span
-                  className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold mt-0.5"
-                  style={{
-                    background: phase.passed ? "rgba(52,211,153,0.15)" : "rgba(248,113,113,0.15)",
-                    color: phase.passed ? "#34d399" : "#f87171",
-                    border: `1px solid ${phase.passed ? "rgba(52,211,153,0.3)" : "rgba(248,113,113,0.3)"}`,
-                  }}
-                >
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold" style={{ color: "#f5ede0" }}>{phase.name}</p>
-                    <AnimatedPhaseBar passed={phase.passed} delay={250 + i * 80} />
-                  </div>
-                  <p className="text-xs" style={{ color: "rgba(245,237,224,0.42)" }}>{phase.feedback}</p>
-                  {hasText(phase.queDebioDecir) && (
-                    <div className="mt-1.5 rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
-                      <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Debiste decir:</p>
-                      <p className="text-xs italic" style={{ color: "rgba(251,191,36,0.85)" }}>"{phase.queDebioDecir}"</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <PhaseAccordionItem key={phase.name} phase={phase} isLast={i === result.phases.length - 1} />
             ))}
           </div>
         </div>
@@ -454,7 +477,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
 
       {/* Strengths & Weaknesses */}
       <Section delay={280}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {[
             { title: "Fortalezas", items: result.strengths, color: "#34d399", bg: "rgba(52,211,153,0.08)", border: "rgba(52,211,153,0.18)", symbol: "+" },
             { title: "A mejorar", items: result.weaknesses, color: "#f87171", bg: "rgba(248,113,113,0.08)", border: "rgba(248,113,113,0.18)", symbol: "−" },
@@ -470,11 +493,11 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                 borderRadius: 16,
               }}
             >
-              <p className="font-bold text-sm" style={{ color }}>{title}</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color }}>{title}</p>
               <div className="gradient-sep" style={{ background: `linear-gradient(to right, transparent, ${color}55, transparent)` }} />
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {items.map((s) => (
-                  <li key={s} className="text-sm flex items-start gap-2" style={{ color: "rgba(245,237,224,0.72)" }}>
+                  <li key={s} className="text-sm flex items-start gap-2" style={{ color: "rgba(245,237,224,0.62)", fontWeight: 400 }}>
                     <span className="shrink-0 mt-0.5 font-bold" style={{ color }}>{symbol}</span>
                     {s}
                   </li>
@@ -489,7 +512,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       {result.objeciones && result.objeciones.length > 0 && (
         <Section delay={360}>
           <div className="p-5 space-y-4" style={GLASS}>
-            <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Objeciones detectadas</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "rgba(245,237,224,0.5)" }}>Objeciones detectadas</p>
             <div className="gradient-sep" />
             <div className="space-y-4">
               {result.objeciones.map((obj, i) => (
@@ -499,8 +522,8 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                   </p>
                   <div className="pl-3 border-l-2 space-y-1.5" style={{ borderColor: "rgba(217,119,6,0.3)" }}>
                     <div>
-                      <p className="text-xs font-medium" style={{ color: "rgba(245,237,224,0.45)" }}>Lo que dijiste:</p>
-                      <p className="text-xs" style={{ color: "rgba(245,237,224,0.65)" }}>{obj.respuestaDada}</p>
+                      <p className="text-xs font-medium" style={{ color: "rgba(245,237,224,0.4)" }}>Lo que dijiste:</p>
+                      <p className="text-xs" style={{ color: "rgba(245,237,224,0.58)" }}>{obj.respuestaDada}</p>
                     </div>
                     {hasText(obj.queDebioDecir) && (
                       <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
@@ -520,13 +543,13 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
       {result.mapaFriccion && result.mapaFriccion.length > 0 && (
         <Section delay={440}>
           <div className="p-5 space-y-4" style={GLASS}>
-            <p className="font-bold text-sm" style={{ color: "#f5ede0" }}>Mapa de fricción</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "rgba(245,237,224,0.5)" }}>Mapa de fricción</p>
             <div className="gradient-sep" />
             <div className="space-y-4">
               {result.mapaFriccion.map((momento, i) => (
                 <div key={i} className="space-y-2">
                   <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <p className="text-xs font-semibold flex-1 min-w-[140px]" style={{ color: "rgba(245,237,224,0.85)" }}>
+                    <p className="text-xs font-semibold flex-1 min-w-[140px]" style={{ color: "rgba(245,237,224,0.8)" }}>
                       "{momento.fragmento}"
                     </p>
                     <span
@@ -540,7 +563,7 @@ export function AnalysisReport({ result, fileName, onReset }: AnalysisReportProp
                       {FRICCION_TIPO_STYLES[momento.tipo]?.label ?? momento.tipo}
                     </span>
                   </div>
-                  <p className="text-xs" style={{ color: "rgba(245,237,224,0.55)" }}>{momento.explicacion}</p>
+                  <p className="text-xs" style={{ color: "rgba(245,237,224,0.5)" }}>{momento.explicacion}</p>
                   {hasText(momento.queHacer) && (
                     <div className="rounded-lg px-3 py-2" style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
                       <p className="text-xs font-semibold mb-0.5" style={{ color: "#fbbf24" }}>Qué hacer:</p>

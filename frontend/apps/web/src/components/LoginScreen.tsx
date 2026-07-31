@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ListChecks, Snowflake, MessageSquareText } from "lucide-react"
+import { ListChecks, AlertTriangle, MessageSquareText } from "lucide-react"
 import { WebGLShader } from "@/components/ui/web-gl-shader"
 import { Logo } from "@/components/Logo"
 
@@ -32,7 +32,7 @@ const BENEFICIOS: Beneficio[] = [
     description: "Dónde estuviste bien y dónde no.",
   },
   {
-    icon: <Snowflake size={17} color="#a78bfa" strokeWidth={1.8} />,
+    icon: <AlertTriangle size={17} color="#a78bfa" strokeWidth={1.8} />,
     title: "Mapa de fricción",
     description: "El momento exacto donde el cliente se enfrió.",
   },

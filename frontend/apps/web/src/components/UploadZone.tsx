@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import { Mic } from "lucide-react"
 
 interface UploadZoneProps {
   onFileSelect: (file: File) => void
@@ -61,10 +62,7 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
           boxShadow: "0 0 30px rgba(124, 58, 237, 0.2)",
         }}
       >
-        <svg className="h-9 w-9" style={{ color: "#a78bfa" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-        </svg>
+        <Mic size={36} color="#a78bfa" strokeWidth={1.5} />
       </div>
 
       {/* Text */}

@@ -111,7 +111,9 @@ interface AnalysisReportProps {
 // hue: 0 (red) → 45 (yellow) → 120 (green)
 function scoreHue(s: number) { return s <= 50 ? s * 0.9 : 45 + (s - 50) * 1.5 }
 
-const GLASS = {
+// Exportado para que ReportPreview.tsx (mockup decorativo del login) use
+// exactamente el mismo estilo de card que el reporte real.
+export const GLASS = {
   background: "rgba(255, 255, 255, 0.03)",
   backdropFilter: "blur(24px)",
   WebkitBackdropFilter: "blur(24px)",
@@ -138,7 +140,7 @@ export const DOMINIO_PENALTIES: { key: keyof EvaluacionDominio; label: string; w
   { key: "no_confirmo_compromiso",  label: "Avanzaste sin confirmar el compromiso",           weight: 5 },
 ]
 
-const FRICCION_TIPO_STYLES: Record<FriccionTipo, { label: string; color: string; bg: string; border: string }> = {
+export const FRICCION_TIPO_STYLES: Record<FriccionTipo, { label: string; color: string; bg: string; border: string }> = {
   incomodidad:     { label: "Incomodidad",        color: "#fbbf24", bg: "rgba(251,191,36,0.12)",  border: "rgba(251,191,36,0.3)"  },
   desconfianza:    { label: "Desconfianza",       color: "#fb923c", bg: "rgba(251,146,60,0.12)",  border: "rgba(251,146,60,0.3)"  },
   desinteres:      { label: "Desinterés",         color: "#818cf8", bg: "rgba(99,102,241,0.12)",  border: "rgba(99,102,241,0.3)"  },

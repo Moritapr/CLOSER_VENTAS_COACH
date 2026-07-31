@@ -20,6 +20,18 @@
   animation: fadeIn 0.3s ease both;
 }
 
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Transición corta para cambios de tab y de estado (idle/loading/reporte) —
+   más sutil que fadeSlideUp, que se usa para el reveal escalonado de
+   secciones dentro del reporte. */
+.animate-fade-slide-in {
+  animation: fadeSlideIn 0.25s ease both;
+}
+
 @keyframes floatParticle {
   0%   { transform: translateY(0)    translateX(0)    scale(1);    opacity: 0.35; }
   25%  { transform: translateY(-18px) translateX(8px)  scale(1.1);  opacity: 0.6;  }

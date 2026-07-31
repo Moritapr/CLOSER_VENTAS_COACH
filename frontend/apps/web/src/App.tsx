@@ -336,9 +336,9 @@ export function App() {
         className="mx-auto px-4 py-8"
         style={{ maxWidth: tab === "analizar" && state === "idle" ? 900 : 672 }}
       >
-        <div key={tab} className="animate-fade-slide-up">
+        <div key={tab} className="animate-fade-slide-in">
           {tab === "analizar" && (
-            <>
+            <div key={state} className="animate-fade-slide-in">
               {state === "idle" && (
                 <>
                   <HeroUpload
@@ -366,7 +366,7 @@ export function App() {
               {state === "done" && result && (
                 <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />
               )}
-            </>
+            </div>
           )}
 
           {tab === "dashboard" && (

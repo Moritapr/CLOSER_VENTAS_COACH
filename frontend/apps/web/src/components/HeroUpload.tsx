@@ -153,15 +153,25 @@ function Particles() {
 // ── Main export ───────────────────────────────────────────────────────────────
 interface HeroUploadProps {
   onFileSelect: (file: File) => void
+  greetingName?: string
+  hasCalls?: boolean
 }
 
-export function HeroUpload({ onFileSelect }: HeroUploadProps) {
+export function HeroUpload({ onFileSelect, greetingName, hasCalls }: HeroUploadProps) {
   return (
     <div style={{ position: "relative", padding: "8px 0 24px" }}>
       <Particles />
 
       {/* Hero heading */}
       <div className="animate-fade-slide-up" style={{ textAlign: "center", marginBottom: 36, position: "relative", zIndex: 1 }}>
+        {greetingName && (
+          <p style={{ color: "rgba(245,237,224,0.5)", fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+            Hola, {greetingName} ·{" "}
+            <span style={{ color: "rgba(245,237,224,0.36)", fontWeight: 400 }}>
+              {hasCalls ? "¿Qué llamada analizamos hoy?" : "Sube tu primera llamada y te digo qué mejorar."}
+            </span>
+          </p>
+        )}
         <h1
           style={{
             fontSize: "clamp(26px, 5vw, 40px)",

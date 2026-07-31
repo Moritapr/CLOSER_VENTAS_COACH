@@ -82,6 +82,12 @@ function authHeaders(token: string | undefined): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+function firstName(user: { user_metadata?: { full_name?: string }; email?: string }): string {
+  const fullName = user.user_metadata?.full_name?.trim()
+  if (fullName) return fullName.split(/\s+/)[0]
+  return user.email?.split("@")[0] ?? ""
+}
+
 function secondsToDuration(s: number): string {
   const m = Math.floor(s / 60)
   const sec = Math.floor(s % 60)
@@ -155,9 +161,14 @@ export function App() {
   }
 
   useEffect(() => {
-    if (tab !== "dashboard") return
+    // Se dispara al loguearse (para tener el conteo de llamadas disponible
+    // para el saludo en la pestaña Analizar) y cada vez que se visita la
+    // pestaña Dashboard (para refrescar). El spinner solo se muestra en esta
+    // segunda situación — en la primera la carga es silenciosa.
+    if (!session) return
+    const esVisitaADashboard = tab === "dashboard"
     const token = session?.access_token
-    setDashboardLoading(true)
+    if (esVisitaADashboard) setDashboardLoading(true)
     Promise.allSettled([
       fetch(`${API_BASE}/api/dashboard`, { headers: authHeaders(token) }).then((r) => {
         if (r.status === 401) throw new Error("SESSION_EXPIRED")
@@ -179,7 +190,7 @@ export function App() {
         )
         if (expiró) handleSessionExpired()
       })
-      .finally(() => setDashboardLoading(false))
+      .finally(() => { if (esVisitaADashboard) setDashboardLoading(false) })
   }, [tab, session])
 
   async function handleFileSelect(file: File) {
@@ -330,7 +341,11 @@ export function App() {
             <>
               {state === "idle" && (
                 <>
-                  <HeroUpload onFileSelect={handleFileSelect} />
+                  <HeroUpload
+                    onFileSelect={handleFileSelect}
+                    greetingName={user ? firstName(user) : undefined}
+                    hasCalls={dashboardData.calls.length > 0}
+                  />
                   {apiError && (
                     <div style={{
                       marginTop: 16,

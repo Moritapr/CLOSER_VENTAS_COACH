@@ -76,6 +76,10 @@ interface BackendAnalysis {
   consejo_principal: string
 }
 
+function authHeaders(token: string | undefined): HeadersInit {
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 function secondsToDuration(s: number): string {
   const m = Math.floor(s / 60)
   const sec = Math.floor(s % 60)
@@ -125,7 +129,7 @@ const EMPTY_PATRONES: PatronesData = {
 }
 
 export function App() {
-  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth()
+  const { user, loading: authLoading, signInWithGoogle, signOut, session } = useAuth()
   const [tab, setTab] = useState<Tab>("analizar")
   const [state, setState] = useState<AppState>("idle")
   const [fileName, setFileName] = useState("")
@@ -134,40 +138,72 @@ export function App() {
   const [dashboardData, setDashboardData] = useState<DashboardData>(EMPTY_DASHBOARD)
   const [patronesData, setPatronesData] = useState<PatronesData>(EMPTY_PATRONES)
   const [dashboardLoading, setDashboardLoading] = useState(false)
+  const [sessionExpired, setSessionExpired] = useState(false)
+
+  function handleSessionExpired() {
+    setSessionExpired(true)
+    setState("idle")
+    setFileName("")
+    setResult(null)
+    setApiError(null)
+    signOut()
+  }
 
   useEffect(() => {
     if (tab !== "dashboard") return
+    const token = session?.access_token
     setDashboardLoading(true)
     Promise.allSettled([
-      fetch(`${API_BASE}/api/dashboard`).then((r) => { if (!r.ok) throw new Error(); return r.json() }),
-      fetch(`${API_BASE}/api/patrones`).then((r) => { if (!r.ok) throw new Error(); return r.json() }),
+      fetch(`${API_BASE}/api/dashboard`, { headers: authHeaders(token) }).then((r) => {
+        if (r.status === 401) throw new Error("SESSION_EXPIRED")
+        if (!r.ok) throw new Error()
+        return r.json()
+      }),
+      fetch(`${API_BASE}/api/patrones`, { headers: authHeaders(token) }).then((r) => {
+        if (r.status === 401) throw new Error("SESSION_EXPIRED")
+        if (!r.ok) throw new Error()
+        return r.json()
+      }),
     ])
       .then(([dashboardResult, patronesResult]) => {
         if (dashboardResult.status === "fulfilled") setDashboardData(dashboardResult.value as DashboardData)
         if (patronesResult.status === "fulfilled") setPatronesData(patronesResult.value as PatronesData)
+
+        const expiró = [dashboardResult, patronesResult].some(
+          (r) => r.status === "rejected" && r.reason instanceof Error && r.reason.message === "SESSION_EXPIRED"
+        )
+        if (expiró) handleSessionExpired()
       })
       .finally(() => setDashboardLoading(false))
-  }, [tab])
+  }, [tab, session])
 
   async function handleFileSelect(file: File) {
     setFileName(file.name)
     setApiError(null)
     setState("loading")
 
+    const token = session?.access_token
+
     try {
       // Step 1: upload MP3, get transcription
       const form = new FormData()
       form.append("archivo", file)
-      const uploadRes = await fetch(`${API_BASE}/api/upload`, { method: "POST", body: form })
+      const uploadRes = await fetch(`${API_BASE}/api/upload`, {
+        method: "POST",
+        headers: authHeaders(token),
+        body: form,
+      })
+      if (uploadRes.status === 401) { handleSessionExpired(); return }
       if (!uploadRes.ok) throw new Error(`El servidor rechazó el archivo (${uploadRes.status}).`)
       const { transcripcion, duracion_segundos } = await uploadRes.json()
 
       // Step 2: analyze transcription
       const analyzeRes = await fetch(`${API_BASE}/api/analizar`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders(token) },
         body: JSON.stringify({ transcripcion, nombre_archivo: file.name, duracion_segundos }),
       })
+      if (analyzeRes.status === 401) { handleSessionExpired(); return }
       if (!analyzeRes.ok) throw new Error(`Error al analizar la llamada (${analyzeRes.status}).`)
       const {
         analisis: analysis,
@@ -211,7 +247,7 @@ export function App() {
   }
 
   if (!user) {
-    return <LoginScreen onSignInWithGoogle={signInWithGoogle} />
+    return <LoginScreen onSignInWithGoogle={signInWithGoogle} sessionExpired={sessionExpired} />
   }
 
   return (

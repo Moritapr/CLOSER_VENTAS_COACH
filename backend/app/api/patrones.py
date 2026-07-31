@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from app.db.supabase import supabase
 from app.services.analisis import _criterio_ocurrio, PENALIZACIONES_DOMINIO
+from app.core.auth import get_current_user_id
 
 router = APIRouter(prefix="/api", tags=["patrones"])
 
@@ -10,10 +11,11 @@ UMBRAL_PATRON = 0.5
 
 
 @router.get("/patrones")
-def patrones():
+def patrones(user_id: str = Depends(get_current_user_id)):
     res = (
         supabase.table("analisis")
         .select("analisis_completo")
+        .eq("user_id", user_id)
         .order("created_at", desc=True)
         .limit(LIMITE_LLAMADAS)
         .execute()

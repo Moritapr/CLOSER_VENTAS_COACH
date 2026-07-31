@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from app.db.supabase import supabase
+from app.core.auth import get_current_user_id
 from datetime import datetime, timezone
 from collections import defaultdict
 
@@ -41,14 +42,20 @@ def weakest_phase(row: dict) -> str:
 
 
 @router.get("/dashboard")
-def dashboard():
-    res = supabase.table("analisis").select(
-        "id,created_at,nombre_archivo,duracion_segundos,puntaje_general,"
-        "fase_1_puntaje,fase_1_realizado,fase_2_puntaje,fase_2_realizado,"
-        "fase_3_puntaje,fase_3_realizado,fase_4_puntaje,fase_4_realizado,"
-        "fase_5_puntaje,fase_5_realizado,fase_6_puntaje,fase_6_realizado,"
-        "fase_7_puntaje,fase_7_realizado,analisis_completo"
-    ).order("created_at", desc=True).execute()
+def dashboard(user_id: str = Depends(get_current_user_id)):
+    res = (
+        supabase.table("analisis")
+        .select(
+            "id,created_at,nombre_archivo,duracion_segundos,puntaje_general,"
+            "fase_1_puntaje,fase_1_realizado,fase_2_puntaje,fase_2_realizado,"
+            "fase_3_puntaje,fase_3_realizado,fase_4_puntaje,fase_4_realizado,"
+            "fase_5_puntaje,fase_5_realizado,fase_6_puntaje,fase_6_realizado,"
+            "fase_7_puntaje,fase_7_realizado,analisis_completo"
+        )
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .execute()
+    )
     rows = res.data or []
 
     # ── Call history ──────────────────────────────────────────────────────────

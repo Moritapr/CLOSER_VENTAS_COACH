@@ -5,6 +5,7 @@ from app.api.upload import router as upload_router
 from app.api.analisis import router as analisis_router
 from app.api.dashboard import router as dashboard_router
 from app.api.patrones import router as patrones_router
+from app.api.referencias import router as referencias_router
 
 app = FastAPI(
     title="Closer Ventas Coach API",
@@ -27,6 +28,7 @@ app.include_router(upload_router)
 app.include_router(analisis_router)
 app.include_router(dashboard_router)
 app.include_router(patrones_router)
+app.include_router(referencias_router)
 
 @app.get("/")
 def root():

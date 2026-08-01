@@ -13,12 +13,12 @@ import {
 import { LoginScreen } from "@/components/LoginScreen"
 import { Logo } from "@/components/Logo"
 import { Dashboard, type DashboardData, type PatronesData } from "@/components/Dashboard"
+import { Biblioteca } from "@/components/Biblioteca"
 import { useAuth } from "@/hooks/useAuth"
+import { API_BASE, authHeaders, mensajeDeError } from "@/lib/api"
 
 type AppState = "idle" | "loading" | "done"
-type Tab = "analizar" | "dashboard"
-
-const API_BASE = "https://closer-ventas-coach.onrender.com"
+type Tab = "analizar" | "dashboard" | "biblioteca"
 
 const PHASE_NAMES = [
   "Introducción",
@@ -76,22 +76,6 @@ interface BackendAnalysis {
   fortalezas: string[]
   areas_de_mejora: string[]
   consejo_principal: string
-}
-
-function authHeaders(token: string | undefined): HeadersInit {
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-// El backend manda errores claros en detail (FastAPI HTTPException) — los
-// mostramos tal cual en vez del genérico "rechazó el archivo (500)".
-async function mensajeDeError(res: Response, fallback: string): Promise<string> {
-  try {
-    const body = await res.json()
-    if (body && typeof body.detail === "string" && body.detail.trim()) return body.detail
-  } catch {
-    // El cuerpo no era JSON — nos quedamos con el mensaje genérico.
-  }
-  return fallback
 }
 
 function firstName(user: { user_metadata?: { full_name?: string }; email?: string }): string {
@@ -312,7 +296,7 @@ export function App() {
 
           {/* Tabs + logout */}
           <div className="flex items-center gap-1">
-            {(["analizar", "dashboard"] as Tab[]).map((t) => (
+            {(["analizar", "biblioteca", "dashboard"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -324,7 +308,7 @@ export function App() {
                   boxShadow: tab === t ? "0 0 15px rgba(217,119,6,0.2)" : undefined,
                 }}
               >
-                {t === "analizar" ? "Analizar" : "Dashboard"}
+                {t === "analizar" ? "Analizar" : t === "biblioteca" ? "Biblioteca" : "Dashboard"}
               </button>
             ))}
             {user.user_metadata?.avatar_url && (
@@ -391,6 +375,10 @@ export function App() {
                 <AnalysisReport result={result} fileName={fileName} onReset={handleReset} />
               )}
             </div>
+          )}
+
+          {tab === "biblioteca" && (
+            <Biblioteca session={session} onSessionExpired={handleSessionExpired} />
           )}
 
           {tab === "dashboard" && (

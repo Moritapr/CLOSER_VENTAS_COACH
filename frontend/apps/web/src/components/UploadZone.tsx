@@ -4,9 +4,16 @@ import { Mic } from "lucide-react"
 interface UploadZoneProps {
   onFileSelect: (file: File) => void
   disabled?: boolean
+  title?: string
+  subtitle?: string
 }
 
-export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
+export function UploadZone({
+  onFileSelect,
+  disabled,
+  title = "Sube tu grabación",
+  subtitle = "Arrastra un archivo de audio o haz clic para seleccionar",
+}: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
 
@@ -67,9 +74,9 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
 
       {/* Text */}
       <div className="space-y-1">
-        <p className="text-lg font-bold" style={{ color: "#f5ede0" }}>Sube tu grabación</p>
+        <p className="text-lg font-bold" style={{ color: "#f5ede0" }}>{title}</p>
         <p className="text-sm" style={{ color: "rgba(245,237,224,0.45)" }}>
-          Arrastra un archivo de audio o haz clic para seleccionar
+          {subtitle}
         </p>
       </div>
 
